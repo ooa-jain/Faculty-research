@@ -1,11 +1,12 @@
 import os
 import json
+import io
 from datetime import datetime, timezone
 from functools import wraps
 
 from flask import (
     Flask, render_template, request, jsonify,
-    redirect, url_for, session, flash
+    redirect, url_for, session, flash, send_file
 )
 from pymongo import MongoClient, DESCENDING
 from bson import ObjectId
@@ -122,10 +123,10 @@ def admin_dashboard():
     ]
     comfort_data = list(responses_col.aggregate(pipeline_comfort))
 
-    # Recent submissions
+    # Recent submissions — always show name (admin view)
     recent = list(responses_col.find(
         {}, {"identity": 1, "submitted_at": 1, "research.domain": 1,
-             "aitools.overallComfort": 1, "consent.anonymous": 1}
+             "aitools.overallComfort": 1, "consent": 1}
     ).sort("submitted_at", DESCENDING).limit(10))
 
     return render_template(
@@ -180,6 +181,116 @@ def export_json():
         headers={"Content-Disposition": "attachment; filename=fdp_responses.json"}
     )
     return response
+
+
+@app.route("/admin/export/excel")
+@admin_required
+def export_excel():
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+    except ImportError:
+        return "openpyxl not installed. Run: pip install openpyxl", 500
+
+    docs = list(responses_col.find({}).sort("submitted_at", DESCENDING))
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "FDP Responses"
+
+    # Header style
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    header_fill = PatternFill("solid", fgColor="00B4A6")
+    header_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+    headers = [
+        "#", "Submitted At", "Name", "Email", "Institution", "Department",
+        "Designation", "Years Exp", "ORCID",
+        "Research Domain", "Sub-Domain", "Keywords", "Paradigm", "Focus",
+        "Pub Total", "Indexed", "h-Index", "Citations", "Patents",
+        "AI Comfort", "AI Tools Used", "AI Concerns",
+        "Innovation Project", "Innovation Stage",
+        "Integration Level",
+        "One Year Goal", "Commitment Action", "Additional Thoughts",
+        "Consented"
+    ]
+
+    ws.row_dimensions[1].height = 30
+    for col_idx, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_idx, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_align
+        ws.column_dimensions[cell.column_letter].width = max(14, len(h) + 2)
+
+    def flat(val):
+        if isinstance(val, list):
+            return ", ".join(str(v) for v in val)
+        if val is None:
+            return ""
+        return str(val)
+
+    for i, doc in enumerate(docs, 1):
+        ident = doc.get("identity", {})
+        res = doc.get("research", {})
+        pub = doc.get("publication", {})
+        ai = doc.get("aitools", {})
+        inno = doc.get("innovation", {})
+        integ = doc.get("integration", {})
+        asp = doc.get("aspirations", {})
+        con = doc.get("consent", {})
+        submitted = doc.get("submitted_at", "")
+        if hasattr(submitted, "strftime"):
+            submitted = submitted.strftime("%d %b %Y %H:%M")
+
+        row = [
+            i,
+            submitted,
+            flat(ident.get("name")),
+            flat(ident.get("email")),
+            flat(ident.get("institution")),
+            flat(ident.get("department")),
+            flat(ident.get("designation")),
+            flat(ident.get("yearsExp")),
+            flat(ident.get("orcid")),
+            flat(res.get("domain")),
+            flat(res.get("subDomain")),
+            flat(res.get("keywords")),
+            flat(res.get("paradigm")),
+            flat(res.get("focus")),
+            flat(pub.get("total")),
+            flat(pub.get("indexed")),
+            flat(pub.get("hIndex")),
+            flat(pub.get("citations")),
+            flat(pub.get("patents")),
+            flat(ai.get("overallComfort")),
+            flat(ai.get("toolsUsed")),
+            flat(ai.get("concerns")),
+            flat(inno.get("hasProject")),
+            flat(inno.get("stage")),
+            flat(integ.get("integrationLevel")),
+            flat(asp.get("oneYearGoal")),
+            flat(asp.get("commitmentAction")),
+            flat(asp.get("additionalThoughts")),
+            "Yes" if con.get("agreed") else "No",
+        ]
+        for col_idx, val in enumerate(row, 1):
+            cell = ws.cell(row=i + 1, column=col_idx, value=val)
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
+        ws.row_dimensions[i + 1].height = 18
+
+    # Freeze header
+    ws.freeze_panes = "A2"
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name="fdp_responses.xlsx"
+    )
 
 
 @app.route("/admin/delete/<response_id>", methods=["POST"])

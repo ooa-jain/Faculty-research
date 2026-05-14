@@ -8,8 +8,10 @@
 </div>
 <div class="page-subhead">PAGE {{ page }} OF {{ pages }} · SHOWING {{ docs|length }} RECORDS</div>
 
-<div style="margin-bottom:16px;display:flex;gap:10px">
-  <a href="{{ url_for('export_json') }}" class="btn btn-primary">↓ Export JSON</a>
+<div style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+  <a href="{{ url_for('export_excel') }}" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px">↓ Export Excel</a>
+  <a href="{{ url_for('export_json') }}" class="btn btn-outline">↓ Export JSON</a>
+  <span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:#64748B">Admin view — names visible</span>
 </div>
 
 <div class="card" style="padding:0;overflow:hidden">
@@ -36,10 +38,9 @@
           {{ doc.submitted_at.strftime('%d %b %y') if doc.submitted_at else '—' }}
         </td>
         <td>
+          {{ doc.identity.name or '—' }}
           {% if doc.consent.anonymous %}
-            <span class="badge badge-gray">Anonymous</span>
-          {% else %}
-            {{ doc.identity.name or '—' }}
+            <span class="badge badge-gray" style="font-size:9px;margin-left:4px">anon</span>
           {% endif %}
         </td>
         <td style="font-size:12px">{{ doc.identity.institution or '—' }}</td>
