@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+  body { background: #f0eee8; }
+  /* ── Admin Nav ── */
+  .admin-nav { background: #0d1a22; color: white; padding: 0; }
+  .admin-nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 0; }
+  .admin-nav-brand { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; color: #4a9e6a; padding: 16px 24px 16px 0; border-right: 1px solid #1a2a35; margin-right: 0; white-space: nowrap; }
+  .admin-nav-link { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #a0b8c8; padding: 16px 18px; text-decoration: none; border-bottom: 2px solid transparent; text-transform: uppercase; white-space: nowrap; }
+  .admin-nav-link:hover, .admin-nav-link.active { color: white; border-bottom-color: #2c5f8a; text-decoration: none; }
+  .admin-nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .admin-nav-logout { font-family: 'DM Mono', monospace; font-size: 10px; color: #6a8a9a; padding: 8px 14px; border: 1px solid #1a2a35; border-radius: 2px; text-decoration: none; }
+  .admin-nav-logout:hover { color: white; border-color: #2c5f8a; text-decoration: none; }
+
+  /* ── Page ── */
+  .admin-page { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; }
+  .page-heading { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+  .page-subhead { font-family: 'DM Mono', monospace; font-size: 10px; color: #7a8e9a; letter-spacing: 1px; margin-bottom: 24px; }
+
+  /* ── Cards ── */
+  .card { background: white; border: 1px solid #c8c0b0; border-radius: 3px; padding: 22px 24px; }
+  .card-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; color: #7a8e9a; text-transform: uppercase; margin-bottom: 8px; }
+
+  /* ── Stat grid ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: white; border: 1px solid #c8c0b0; border-radius: 3px; padding: 20px 22px; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: #0d1a22; }
+  .stat-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; color: #7a8e9a; margin-top: 4px; text-transform: uppercase; }
+
+  /* ── Table ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .data-table th { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #7a8e9a; padding: 8px 12px; border-bottom: 2px solid #e8e0d0; text-align: left; }
+  .data-table td { padding: 10px 12px; border-bottom: 1px solid #ede8e0; vertical-align: top; }
+  .data-table tr:hover td { background: #faf7f2; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-family: 'DM Mono', monospace; font-size: 10px; }
+  .badge-green { background: #e8f5e8; color: #2a7a2a; }
+  .badge-blue { background: #e8f0f8; color: #1a4a8a; }
+  .badge-gray { background: #ede8e0; color: #6a7a7a; }
+
+  /* ── Bar chart ── */
+  .bar-list { display: flex; flex-direction: column; gap: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .bar-label { min-width: 180px; max-width: 180px; font-size: 11px; color: #3a4a55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; height: 14px; background: #ede8e0; border-radius: 2px; overflow: hidden; }
+  .bar-fill { height: 100%; background: #2c5f8a; border-radius: 2px; transition: width .6s ease; }
+  .bar-count { font-family: 'DM Mono', monospace; font-size: 10px; color: #7a8e9a; min-width: 28px; text-align: right; }
+
+  /* ── Pagination ── */
+  .pag { display: flex; gap: 6px; align-items: center; margin-top: 16px; }
+  .pag a, .pag span { font-family: 'DM Mono', monospace; font-size: 10px; padding: 6px 12px; border: 1px solid #c8c0b0; border-radius: 2px; color: #3a4a55; text-decoration: none; }
+  .pag .current { background: #0d1a22; color: white; border-color: #0d1a22; }
+  .pag a:hover { background: #f0ece6; }
+
+  /* ── Buttons ── */
+  .btn { display: inline-block; padding: 7px 16px; border-radius: 2px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
+  .btn-primary { background: #2c5f8a; color: white; }
+  .btn-danger { background: #c0392b; color: white; }
+  .btn-outline { background: white; color: #2c5f8a; border-color: #2c5f8a; }
+  .btn:hover { opacity: .88; text-decoration: none; }
+
+  /* ── Grid ── */
+  .two-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:700px){ .two-panel{ grid-template-columns:1fr; } }
+
+  /* ── Detail ── */
+  .detail-section { margin-bottom: 24px; }
+  .detail-section-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; color: #2c5f8a; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #e8e0d0; }
+  .detail-row { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f0ece6; font-size: 13px; }
+  .detail-key { min-width: 220px; font-family: 'DM Mono', monospace; font-size: 11px; color: #7a8e9a; }
+  .detail-val { color: #1a2a35; flex: 1; }
+</style>
+{% block admin_extra_head %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<nav class="admin-nav">
+  <div class="admin-nav-inner">
+    <div class="admin-nav-brand">◈ FDP ADMIN</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-link {% if request.endpoint=='admin_dashboard' %}active{% endif %}">Dashboard</a>
+    <a href="{{ url_for('admin_responses') }}" class="admin-nav-link {% if request.endpoint in ['admin_responses','admin_response_detail'] %}active{% endif %}">Responses</a>
+    <a href="{{ url_for('export_json') }}" class="admin-nav-link">Export JSON</a>
+    <a href="/" class="admin-nav-link" target="_blank">Survey ↗</a>
+    <div class="admin-nav-right">
+      <a href="{{ url_for('admin_logout') }}" class="admin-nav-logout">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<div class="admin-page">
+  {% block admin_content %}{% endblock %}
+</div>
+{% endblock %}

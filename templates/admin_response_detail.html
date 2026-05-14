@@ -1,0 +1,127 @@
+{% extends "admin_base.html" %}
+{% block title %}Response Detail — FDP Admin{% endblock %}
+
+{% macro row(key, val) %}
+<div class="detail-row">
+  <div class="detail-key">{{ key }}</div>
+  <div class="detail-val">
+    {% if val is iterable and val is not string %}
+      {% if val %}
+        {% for item in val %}<span class="badge badge-blue" style="margin:2px 3px 2px 0">{{ item }}</span>{% endfor %}
+      {% else %}—{% endif %}
+    {% elif val %}
+      {{ val }}
+    {% else %}—{% endif %}
+  </div>
+</div>
+{% endmacro %}
+
+{% block admin_content %}
+<div style="margin-bottom:16px">
+  <a href="{{ url_for('admin_responses') }}" style="font-family:'DM Mono',monospace;font-size:10px;color:#7a8e9a">← Back to responses</a>
+</div>
+
+<div class="page-heading">Response Detail</div>
+<div class="page-subhead">ID: {{ doc._id }} · SUBMITTED: {{ doc.submitted_at.strftime('%d %B %Y at %H:%M UTC') if doc.submitted_at else '—' }}</div>
+
+<div class="two-panel">
+  <!-- Left column -->
+  <div>
+    <div class="card detail-section">
+      <div class="detail-section-title">Consent & Identity</div>
+      {{ row('Consented', 'Yes' if doc.consent.agreed else 'No') }}
+      {{ row('Anonymous', 'Yes' if doc.consent.anonymous else 'No') }}
+      {{ row('Name', doc.identity.name) }}
+      {{ row('Email', doc.identity.email) }}
+      {{ row('Institution', doc.identity.institution) }}
+      {{ row('Department', doc.identity.department) }}
+      {{ row('Designation', doc.identity.designation) }}
+      {{ row('Experience', doc.identity.yearsExperience) }}
+      {{ row('ORCID', doc.identity.orcid) }}
+    </div>
+
+    <div class="card detail-section">
+      <div class="detail-section-title">Research Profile</div>
+      {{ row('Primary Domain', doc.research.primaryDomain) }}
+      {{ row('Sub-Domain', doc.research.subDomain) }}
+      {{ row('Keywords', doc.research.keywords) }}
+      {{ row('Approaches', doc.research.researchApproach) }}
+      {{ row('Paradigm', doc.research.paradigm) }}
+      {{ row('Current Focus', doc.research.currentFocus) }}
+      {{ row('Collaboration Types', doc.research.collaborationType) }}
+      {{ row('Funding Status', doc.research.fundingStatus) }}
+    </div>
+
+    <div class="card detail-section">
+      <div class="detail-section-title">Publication History</div>
+      {{ row('Total Papers', doc.publication.totalPapers) }}
+      {{ row('Indexed Papers', doc.publication.indexedPapers) }}
+      {{ row('h-Index', doc.publication.hIndex) }}
+      {{ row('Citations', doc.publication.citations) }}
+      {{ row('Last Published', doc.publication.lastPublicationYear) }}
+      {{ row('Conference Papers', doc.publication.conferenceCount) }}
+      {{ row('Book Chapters', doc.publication.bookChapters) }}
+      {{ row('Patents', doc.publication.patents) }}
+      {{ row('Journal Types', doc.publication.journalTypes) }}
+      {{ row('Open Access', doc.publication.openAccessPractice) }}
+      {{ row('Biggest Challenge', doc.publication.biggestPublicationChallenge) }}
+    </div>
+  </div>
+
+  <!-- Right column -->
+  <div>
+    <div class="card detail-section">
+      <div class="detail-section-title">Innovation Projects</div>
+      {{ row('Active Project', doc.innovation.hasActiveProject) }}
+      {{ row('Project Description', doc.innovation.projectDescription) }}
+      {{ row('TRL Stage', doc.innovation.projectStage) }}
+      {{ row('Startup / Spinoff', doc.innovation.startupOrSpinoff) }}
+      {{ row('Industry Collaboration', doc.innovation.industryCollaboration) }}
+      {{ row('Barriers', doc.innovation.innovationBarriers) }}
+      {{ row('Value Creation Approach', doc.innovation.valueCreationApproach) }}
+      {{ row('IP Awareness', doc.innovation.ipAwareness) }}
+    </div>
+
+    <div class="card detail-section">
+      <div class="detail-section-title">AI Tool Comfort</div>
+      {{ row('Overall Comfort', doc.aitools.overallComfort) }}
+      {{ row('Tools Used', doc.aitools.toolsUsed) }}
+      {{ row('Usage Contexts', doc.aitools.usageContexts) }}
+      {{ row('AI in Research', doc.aitools.researchAiUse) }}
+      {{ row('AI in Teaching', doc.aitools.teachingAiUse) }}
+      {{ row('AI Concerns', doc.aitools.aiConcerns) }}
+      {{ row('Opportunity Rating', doc.aitools.aiOpportunityRating) }}
+      {{ row('Want to Learn', doc.aitools.aiToolsWantToLearn) }}
+    </div>
+
+    <div class="card detail-section">
+      <div class="detail-section-title">Teaching-Research Integration</div>
+      {{ row('Integration Level', doc.integration.currentIntegrationLevel) }}
+      {{ row('Methods Used', doc.integration.integrationMethods) }}
+      {{ row('Main Challenge', doc.integration.mainChallenge) }}
+      {{ row('First Principles Awareness', doc.integration.firstPrinciplesAwareness) }}
+      {{ row('Transdisciplinary Exp.', doc.integration.transdisciplinaryExp) }}
+      {{ row('Student Involvement', doc.integration.studentResearchInvolvement) }}
+      {{ row('Deep Reading Habit', doc.integration.deepReadingHabit) }}
+      {{ row('Knowledge Curation', doc.integration.knowledgeCurationPractice) }}
+      {{ row('FDP Expectation', doc.integration.fdpExpectation) }}
+    </div>
+
+    <div class="card detail-section">
+      <div class="detail-section-title">Aspirations & Commitments</div>
+      {{ row('12-Month Goal', doc.aspirations.oneYearGoal) }}
+      {{ row('Innovation Idea', doc.aspirations.innovationIdea) }}
+      {{ row('Collaboration Interest', doc.aspirations.collaborationInterest) }}
+      {{ row('7-Day Commitment', doc.aspirations.commitmentAction) }}
+      {{ row('Additional Thoughts', doc.aspirations.additionalThoughts) }}
+    </div>
+  </div>
+</div>
+
+<!-- Delete -->
+<div style="margin-top:8px;padding-top:16px;border-top:1px solid #e8e0d0">
+  <form method="POST" action="{{ url_for('admin_delete', response_id=doc._id) }}" onsubmit="return confirm('Permanently delete this response?')">
+    <button type="submit" class="btn btn-danger">Delete this Response</button>
+  </form>
+</div>
+{% endblock %}

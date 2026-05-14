@@ -1,0 +1,143 @@
+{% extends "admin_base.html" %}
+{% block title %}Dashboard — FDP Admin{% endblock %}
+
+{% block admin_content %}
+<div class="page-heading">Dashboard</div>
+<div class="page-subhead">REAL-TIME SURVEY ANALYTICS · FDP RESEARCH INSTRUMENT</div>
+
+<!-- Stats -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-num">{{ total }}</div>
+    <div class="stat-label">Total Responses</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ consented }}</div>
+    <div class="stat-label">Consented</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ ((consented / total * 100) | round(1)) if total > 0 else 0 }}%</div>
+    <div class="stat-label">Consent Rate</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ 80 - total }}</div>
+    <div class="stat-label">Remaining (target N=80)</div>
+  </div>
+</div>
+
+<div class="two-panel">
+  <!-- Designation breakdown -->
+  <div class="card">
+    <div class="card-title">Designation Breakdown</div>
+    {% set max_d = designation_data[0].count if designation_data else 1 %}
+    <div class="bar-list" style="margin-top:12px">
+      {% for item in designation_data %}
+      <div class="bar-row">
+        <div class="bar-label" title="{{ item._id or 'Not specified' }}">{{ item._id or 'Not specified' }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ ((item.count / max_d) * 100)|round }}%"></div></div>
+        <div class="bar-count">{{ item.count }}</div>
+      </div>
+      {% else %}
+      <p style="font-size:12px;color:#9a9080">No data yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- AI Tool usage -->
+  <div class="card">
+    <div class="card-title">Top AI Tools Used</div>
+    {% set max_a = ai_tools_data[0].count if ai_tools_data else 1 %}
+    <div class="bar-list" style="margin-top:12px">
+      {% for item in ai_tools_data %}
+      <div class="bar-row">
+        <div class="bar-label" title="{{ item._id or '—' }}">{{ item._id or '—' }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ ((item.count / max_a) * 100)|round }}%;background:#1a6b4a"></div></div>
+        <div class="bar-count">{{ item.count }}</div>
+      </div>
+      {% else %}
+      <p style="font-size:12px;color:#9a9080">No data yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Research domains -->
+  <div class="card">
+    <div class="card-title">Top Research Domains</div>
+    {% set max_r = domain_data[0].count if domain_data else 1 %}
+    <div class="bar-list" style="margin-top:12px">
+      {% for item in domain_data %}
+      <div class="bar-row">
+        <div class="bar-label" title="{{ item._id or 'Not specified' }}">{{ item._id or 'Not specified' }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ ((item.count / max_r) * 100)|round }}%;background:#7a3b6a"></div></div>
+        <div class="bar-count">{{ item.count }}</div>
+      </div>
+      {% else %}
+      <p style="font-size:12px;color:#9a9080">No data yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- AI Comfort distribution -->
+  <div class="card">
+    <div class="card-title">AI Comfort Level Distribution</div>
+    {% set max_c = comfort_data | map(attribute='count') | max if comfort_data else 1 %}
+    <div class="bar-list" style="margin-top:12px">
+      {% for item in comfort_data %}
+      {% if item._id %}
+      <div class="bar-row">
+        <div class="bar-label">Level {{ item._id }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ ((item.count / max_c) * 100)|round }}%;background:#c0392b"></div></div>
+        <div class="bar-count">{{ item.count }}</div>
+      </div>
+      {% endif %}
+      {% else %}
+      <p style="font-size:12px;color:#9a9080">No data yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Recent submissions -->
+<div class="card" style="margin-top:20px">
+  <div class="card-title">Recent Submissions</div>
+  <table class="data-table" style="margin-top:12px">
+    <thead>
+      <tr>
+        <th>Submitted</th>
+        <th>Name / Anonymous</th>
+        <th>Institution</th>
+        <th>Domain</th>
+        <th>AI Comfort</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for doc in recent %}
+      <tr>
+        <td>{{ doc.submitted_at.strftime('%d %b %Y, %H:%M') if doc.submitted_at else '—' }}</td>
+        <td>
+          {% if doc.consent.anonymous %}
+            <span class="badge badge-gray">Anonymous</span>
+          {% else %}
+            {{ doc.identity.name or '—' }}
+          {% endif %}
+        </td>
+        <td>{{ doc.identity.institution or '—' }}</td>
+        <td>{{ doc.research.primaryDomain or '—' }}</td>
+        <td>
+          {% if doc.aitools.overallComfort %}
+            <span class="badge badge-blue">{{ doc.aitools.overallComfort }} / 5</span>
+          {% else %}—{% endif %}
+        </td>
+        <td><a href="{{ url_for('admin_response_detail', response_id=doc._id) }}" class="btn btn-outline" style="font-size:9px;padding:4px 10px">VIEW</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:#9a9080;font-size:12px;padding:20px">No responses yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if total > 10 %}
+  <div style="margin-top:12px"><a href="{{ url_for('admin_responses') }}" class="btn btn-outline">View all {{ total }} responses →</a></div>
+  {% endif %}
+</div>
+{% endblock %}

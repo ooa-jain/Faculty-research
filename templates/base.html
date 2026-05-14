@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}FDP Survey{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Libre+Baskerville:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Libre Baskerville', serif; background: #f2ede4; color: #1a2a35; }
+    a { color: #2c5f8a; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .mono { font-family: 'DM Mono', monospace; }
+    .flash-messages { padding: 10px 24px; }
+    .flash { padding: 10px 16px; border-radius: 3px; margin-bottom: 8px; font-size: 13px; font-family: 'DM Mono', monospace; }
+    .flash.error { background: #fdecea; border-left: 4px solid #c0392b; color: #7a1a10; }
+    .flash.success { background: #eaf5ea; border-left: 4px solid #2a7a2a; color: #1a4a1a; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Admin Login — FDP Survey{% endblock %}
+
+{% block extra_head %}
+<style>
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0d1a22; }
+  .login-card { background: white; width: 380px; border-radius: 4px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+  .login-header { background: #0d1a22; color: white; padding: 28px 28px 22px; }
+  .login-header .label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; color: #4a9e6a; margin-bottom: 8px; }
+  .login-header h1 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; }
+  .login-body { padding: 28px; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #7a8e9a; margin-bottom: 6px; text-transform: uppercase; }
+  .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #c8d5e0; border-radius: 3px; font-family: 'Libre Baskerville', serif; font-size: 13px; outline: none; box-sizing: border-box; }
+  .form-group input:focus { border-color: #2c5f8a; }
+  .btn-login { width: 100%; padding: 12px; border: none; background: #2c5f8a; color: white; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; cursor: pointer; border-radius: 3px; margin-top: 8px; }
+  .btn-login:hover { background: #1a4a7a; }
+  .flash-messages { padding: 0; }
+  .flash { margin: 0; border-radius: 0; }
+  .back-link { text-align: center; margin-top: 16px; font-family: 'DM Mono', monospace; font-size: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-card">
+  <div class="login-header">
+    <div class="label">Faculty Development Programme</div>
+    <h1>Admin Portal</h1>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}" style="margin:0;border-radius:0;padding:10px 16px">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <div class="login-body">
+    <form method="POST">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="admin" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-login">SIGN IN →</button>
+    </form>
+    <div class="back-link" style="margin-top:16px"><a href="/" style="color:#7a8e9a">← Back to survey</a></div>
+  </div>
+</div>
+{% endblock %}

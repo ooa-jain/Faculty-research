@@ -1,0 +1,90 @@
+{% extends "admin_base.html" %}
+{% block title %}Responses — FDP Admin{% endblock %}
+
+{% block admin_content %}
+<div style="display:flex;align-items:baseline;gap:16px;margin-bottom:4px">
+  <div class="page-heading">All Responses</div>
+  <span class="badge badge-blue">{{ total }} total</span>
+</div>
+<div class="page-subhead">PAGE {{ page }} OF {{ pages }} · SHOWING {{ docs|length }} RECORDS</div>
+
+<div style="margin-bottom:16px;display:flex;gap:10px">
+  <a href="{{ url_for('export_json') }}" class="btn btn-primary">↓ Export JSON</a>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Submitted</th>
+        <th>Name</th>
+        <th>Institution</th>
+        <th>Designation</th>
+        <th>Domain</th>
+        <th>AI Comfort</th>
+        <th>Consent</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for doc in docs %}
+      {% set rownum = (page-1)*20 + loop.index %}
+      <tr>
+        <td style="color:#9a9080;font-family:'DM Mono',monospace;font-size:10px">{{ rownum }}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:10px;white-space:nowrap">
+          {{ doc.submitted_at.strftime('%d %b %y') if doc.submitted_at else '—' }}
+        </td>
+        <td>
+          {% if doc.consent.anonymous %}
+            <span class="badge badge-gray">Anonymous</span>
+          {% else %}
+            {{ doc.identity.name or '—' }}
+          {% endif %}
+        </td>
+        <td style="font-size:12px">{{ doc.identity.institution or '—' }}</td>
+        <td style="font-size:11px">{{ doc.identity.designation or '—' }}</td>
+        <td style="font-size:11px">{{ doc.research.primaryDomain or '—' }}</td>
+        <td>
+          {% if doc.aitools.overallComfort %}
+            <span class="badge badge-blue">{{ doc.aitools.overallComfort }}/5</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if doc.consent.agreed %}
+            <span class="badge badge-green">Yes</span>
+          {% else %}
+            <span class="badge badge-gray">No</span>
+          {% endif %}
+        </td>
+        <td style="white-space:nowrap">
+          <a href="{{ url_for('admin_response_detail', response_id=doc._id) }}" class="btn btn-outline" style="font-size:9px;padding:4px 10px">View</a>
+          <form method="POST" action="{{ url_for('admin_delete', response_id=doc._id) }}" style="display:inline" onsubmit="return confirm('Delete this response?')">
+            <button type="submit" class="btn btn-danger" style="font-size:9px;padding:4px 10px">Del</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="9" style="text-align:center;color:#9a9080;padding:28px">No responses found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if pages > 1 %}
+<div class="pag">
+  {% if page > 1 %}<a href="?page={{ page - 1 }}">← Prev</a>{% endif %}
+  {% for p in range(1, pages+1) %}
+    {% if p == page %}
+      <span class="current">{{ p }}</span>
+    {% elif p <= 3 or p >= pages-2 or (p >= page-1 and p <= page+1) %}
+      <a href="?page={{ p }}">{{ p }}</a>
+    {% elif p == 4 or p == pages-3 %}
+      <span style="border:none;padding:6px 4px;color:#9a9080">…</span>
+    {% endif %}
+  {% endfor %}
+  {% if page < pages %}<a href="?page={{ page + 1 }}">Next →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

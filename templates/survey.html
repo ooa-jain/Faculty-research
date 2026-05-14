@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+{% block title %}FDP Faculty Research & Innovation Survey{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Layout ── */
+  .topbar { background: #0d1a22; color: white; }
+  .topbar-inner { max-width: 780px; margin: 0 auto; padding: 18px 24px 14px; }
+  .topbar-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; color: #4a9e6a; margin-bottom: 6px; text-transform: uppercase; }
+  .topbar h1 { font-family: 'Playfair Display', serif; font-size: clamp(18px,3vw,26px); font-weight: 900; line-height: 1.2; }
+  .topbar-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: #6a8a9a; margin-top: 8px; letter-spacing: 1px; }
+  .progress-bar { height: 4px; background: #1a2a35; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,#4a9e6a,#2c5f8a); transition: width .4s ease; }
+
+  .main { max-width: 780px; margin: 0 auto; padding: 0 16px 60px; }
+
+  /* ── Section Nav ── */
+  .section-nav { display: flex; gap: 0; overflow-x: auto; margin: 0 -16px; padding: 0 16px; border-bottom: 1px solid #c8c0b0; background: #e8e0d0; }
+  .snav-btn { padding: 10px 14px; border: none; border-bottom: 3px solid transparent; background: transparent; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .5px; color: #9a9080; white-space: nowrap; text-transform: uppercase; transition: all .15s; }
+  .snav-btn.active { border-bottom-color: #2c5f8a; color: #2c5f8a; }
+  .snav-btn.done { color: #4a6a5a; cursor: pointer; }
+
+  /* ── Section Panel ── */
+  .section-panel { background: white; border: 1px solid #c8c0b0; border-top: none; padding: 28px; }
+  .section-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; color: #c0392b; margin-bottom: 6px; text-transform: uppercase; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; padding-bottom: 14px; margin-bottom: 24px; border-bottom: 2px solid #0d1a22; }
+
+  /* ── Fields ── */
+  .field { margin-bottom: 22px; }
+  .field-label { font-family: 'Libre Baskerville', serif; font-weight: 700; font-size: 13.5px; color: #1a2a35; margin-bottom: 3px; }
+  .field-hint { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #7a8e9a; margin-bottom: 6px; letter-spacing: .5px; }
+  .req { color: #c0392b; font-size: 11px; }
+
+  input[type=text], input[type=email], textarea, select {
+    width: 100%; padding: 9px 12px; border: 1px solid #c8d5e0; border-radius: 3px;
+    font-family: 'Libre Baskerville', serif; font-size: 13px; color: #1a2a35;
+    background: white; outline: none; box-sizing: border-box;
+  }
+  textarea { resize: vertical; }
+  select { appearance: auto; }
+
+  /* ── Checkbox / Radio Groups ── */
+  .check-grid { display: grid; gap: 6px 12px; margin: 8px 0; }
+  .check-grid.col2 { grid-template-columns: 1fr 1fr; }
+  .check-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+  .check-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #2a3a45; padding: 6px 8px; border: 1px solid #dde5ea; border-radius: 3px; transition: all .12s; background: white; }
+  .check-item.selected { border-color: #2c5f8a; background: #eef4f9; }
+  .check-item input { accent-color: #2c5f8a; }
+
+  .radio-stack { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+  .radio-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #2a3a45; padding: 7px 10px; border: 1px solid #dde5ea; border-radius: 3px; background: white; transition: all .12s; }
+  .radio-item.selected { border-color: #2c5f8a; background: #eef4f9; }
+  .radio-item input { accent-color: #2c5f8a; }
+
+  /* ── Rating Scale ── */
+  .rating-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .rating-btn { width: 44px; height: 44px; border: 2px solid #c8d5e0; background: white; color: #4a6070; border-radius: 4px; cursor: pointer; font-family: 'DM Mono', monospace; font-weight: 700; font-size: 15px; transition: all .15s; }
+  .rating-btn.selected { background: var(--rc, #2c5f8a); border-color: var(--rc, #2c5f8a); color: white; }
+  .rating-labels { display: flex; justify-content: space-between; margin-top: 4px; font-family: 'DM Mono', monospace; font-size: 10px; color: #7a8e9a; letter-spacing: 1px; }
+
+  /* ── Two-col grid ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+
+  /* ── Nav Buttons ── */
+  .nav-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid #c8c0b0; }
+  .btn-prev { padding: 10px 22px; border: 2px solid #0d1a22; background: white; color: #0d1a22; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; }
+  .btn-prev:disabled { opacity: .3; cursor: not-allowed; }
+  .btn-next { padding: 10px 22px; border: none; background: #0d1a22; color: white; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; }
+  .btn-submit { padding: 10px 26px; border: none; background: #2c5f8a; color: white; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; }
+  .nav-count { font-family: 'DM Mono', monospace; font-size: 10px; color: #7a8e9a; letter-spacing: 1px; }
+  .footer-note { font-family: 'DM Mono', monospace; font-size: 9px; color: #9a9080; letter-spacing: 1px; text-align: center; margin-top: 8px; }
+
+  /* ── Info box ── */
+  .info-box { background: #eef4f9; border: 1px solid #b8cedd; border-left: 4px solid #2c5f8a; padding: 16px 18px; margin-bottom: 24px; border-radius: 2px; }
+  .info-box-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #2c5f8a; margin-bottom: 6px; }
+  .info-box p { font-size: 13px; line-height: 1.7; color: #2a3a45; margin-bottom: 8px; }
+  .ethics-box { background: #f0f7f0; border: 1px solid #a8c9a8; border-left: 4px solid #2a7a2a; padding: 14px 16px; border-radius: 2px; margin-top: 8px; }
+  .ethics-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #2a7a2a; margin-bottom: 6px; }
+
+  /* ── Thank-you ── */
+  .thankyou { min-height: 100vh; background: #0d1a22; display: flex; align-items: center; justify-content: center; }
+  .thankyou-inner { text-align: center; color: white; max-width: 500px; padding: 40px; }
+  .thankyou-icon { font-family: 'DM Mono', monospace; font-size: 48px; color: #4a9e6a; margin-bottom: 20px; }
+  .thankyou h2 { font-size: 28px; font-weight: 900; margin-bottom: 12px; }
+  .thankyou p { font-size: 15px; color: #a0b8c8; line-height: 1.7; margin-bottom: 20px; }
+  .thankyou-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: #4a9e6a; letter-spacing: 2px; }
+  .commitment-box { margin-top: 30px; padding: 16px 20px; border: 1px solid #2a4a5a; border-radius: 4px; }
+  .commitment-label { font-family: 'DM Mono', monospace; font-size: 10px; color: #6a8a9a; letter-spacing: 1px; margin-bottom: 8px; }
+  .commitment-text { font-size: 14px; color: #d0e8f0; font-style: italic; }
+
+  @media(max-width:600px){
+    .two-col { grid-template-columns: 1fr; }
+    .check-grid.col3 { grid-template-columns: 1fr 1fr; }
+    .check-grid.col2 { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- THANK-YOU (hidden initially) -->
+<div class="thankyou" id="thankyou" style="display:none">
+  <div class="thankyou-inner">
+    <div class="thankyou-icon">◈</div>
+    <h2>Thank You</h2>
+    <p>Your responses have been recorded. You are now part of a research dataset of <strong style="color:white">80 faculty innovators</strong>. Your data will inform both the FDP session and a publishable research paper.</p>
+    <p class="thankyou-tag">RESEARCH DATA POINT #1 — CAPTURED</p>
+    <div class="commitment-box">
+      <div class="commitment-label">YOUR COMMITMENT FOR THIS WEEK</div>
+      <div class="commitment-text" id="commitment-display">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- SURVEY FORM -->
+<div id="survey-app">
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-label">Faculty Development Programme · Research Data Point #1</div>
+      <h1>Faculty Research &amp; Innovation<br>Profiling Survey</h1>
+      <div class="topbar-sub">N=80 participants · Mixed-methods research instrument · Pre-session</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="main">
+    <!-- Section nav -->
+    <div class="section-nav" id="section-nav"></div>
+
+    <!-- Section panel -->
+    <div class="section-panel">
+      <div class="section-label" id="section-label"></div>
+      <div class="section-title" id="section-title"></div>
+      <div id="section-body"></div>
+    </div>
+
+    <!-- Nav row -->
+    <div class="nav-row">
+      <button class="btn-prev" id="btn-prev" onclick="prevSection()">← PREVIOUS</button>
+      <div class="nav-count" id="nav-count"></div>
+      <button class="btn-next" id="btn-next" onclick="nextSection()">NEXT →</button>
+      <button class="btn-submit" id="btn-submit" onclick="submitSurvey()" style="display:none">SUBMIT SURVEY ◈</button>
+    </div>
+    <div class="footer-note">DATA IS ANONYMISED · FOR RESEARCH USE ONLY · FDP SESSION — RESEARCH INNOVATION &amp; KNOWLEDGE CREATION</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA MODEL
+// ─────────────────────────────────────────────────────────────────────────────
+const data = {
+  consent:     { agreed: "", anonymous: true },
+  identity:    { name:"", institution:"", department:"", designation:"", yearsExperience:"", email:"", orcid:"" },
+  research:    { primaryDomain:"", subDomain:"", keywords:"", researchApproach:[], paradigm:"", currentFocus:"", collaborationType:[], fundingStatus:"" },
+  publication: { totalPapers:"", indexedPapers:"", hIndex:"", citations:"", journalTypes:[], lastPublicationYear:"", conferenceCount:"", bookChapters:"", patents:"", openAccessPractice:"", biggestPublicationChallenge:"" },
+  innovation:  { hasActiveProject:"", projectDescription:"", projectStage:"", startupOrSpinoff:"", industryCollaboration:"", innovationBarriers:[], valueCreationApproach:"", ipAwareness:"" },
+  aitools:     { overallComfort:0, toolsUsed:[], usageContexts:[], researchAiUse:"", teachingAiUse:"", aiConcerns:[], aiOpportunityRating:0, aiToolsWantToLearn:"" },
+  integration: { currentIntegrationLevel:0, integrationMethods:[], mainChallenge:"", firstPrinciplesAwareness:"", transdisciplinaryExp:"", studentResearchInvolvement:"", deepReadingHabit:"", knowledgeCurationPractice:"", fdpExpectation:"" },
+  aspirations: { oneYearGoal:"", innovationIdea:"", collaborationInterest:"", commitmentAction:"", additionalThoughts:"" },
+};
+
+const SECTIONS = [
+  { id:"consent",     label:"Consent & Identity",           icon:"◈" },
+  { id:"research",    label:"Research Profile",             icon:"◉" },
+  { id:"publication", label:"Publication History",          icon:"◎" },
+  { id:"innovation",  label:"Innovation Projects",          icon:"◐" },
+  { id:"aitools",     label:"AI Tool Comfort",              icon:"◑" },
+  { id:"integration", label:"Teaching-Research Integration",icon:"◒" },
+  { id:"aspirations", label:"Aspirations & Commitments",    icon:"◓" },
+];
+
+const RESEARCH_APPROACHES = ["Quantitative","Qualitative","Mixed Methods","Experimental","Theoretical","Computational","Design-based","Action Research"];
+const PARADIGMS = ["Positivist","Interpretivist","Critical","Pragmatist","Constructivist","Post-positivist"];
+const COLLAB_TYPES = ["Solo research","Within institution","Inter-institutional","International","Industry-academia","Citizen science"];
+const JOURNAL_TYPES = ["Scopus indexed","Web of Science","UGC-CARE","Predatory (knowingly)","Open access","High Impact Factor (>3)","Conference proceedings"];
+const INNOVATION_BARRIERS = ["Lack of time","No funding","Institutional support","Awareness of IP/TRL","Industry connect","Entrepreneurial mindset","Regulatory hurdles","Team gaps"];
+const AI_TOOLS = ["ChatGPT","Claude","Gemini","Copilot","Perplexity","Elicit","ResearchRabbit","Scite.ai","Consensus","Canva AI","Napkin.ai","Gamma","Grammarly AI","NotebookLM","None yet"];
+const AI_CONTEXTS = ["Literature review","Writing assistance","Data analysis","Teaching materials","Presentation design","Research ideation","Grant writing","Code generation","None"];
+const AI_CONCERNS = ["Academic integrity","Data privacy","Over-reliance","Job displacement","Misinformation","Bias in outputs","No concerns"];
+const INTEGRATION_METHODS = ["Assigning research papers to students","Student research projects","Citing own research in lectures","Problem-based learning from research","Live lab demonstrations","Research-informed curriculum design","Co-authoring with students","None currently"];
+
+let currentSection = 0;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BUILDER HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+function field(label, hint, required, inner) {
+  return `<div class="field">
+    <div class="field-label">${label}${required?'<span class="req"> *</span>':''}</div>
+    ${hint?`<div class="field-hint">${hint}</div>`:''}
+    ${inner}
+  </div>`;
+}
+
+function inputEl(block, key, placeholder, type='text') {
+  const v = data[block][key] || '';
+  return `<input type="${type}" value="${esc(v)}" placeholder="${placeholder}"
+    onchange="data.${block}.${key}=this.value">`;
+}
+
+function textareaEl(block, key, placeholder, rows=3) {
+  const v = data[block][key] || '';
+  return `<textarea rows="${rows}" placeholder="${placeholder}"
+    onchange="data.${block}.${key}=this.value">${esc(v)}</textarea>`;
+}
+
+function selectEl(block, key, options, placeholder) {
+  const v = data[block][key] || '';
+  let opts = `<option value="">${placeholder||'Select…'}</option>`;
+  options.forEach(o => opts += `<option value="${o}"${v===o?' selected':''}>${o}</option>`);
+  return `<select onchange="data.${block}.${key}=this.value">${opts}</select>`;
+}
+
+function radioGroup(block, key, options) {
+  return '<div class="radio-stack">' + options.map(o => {
+    const sel = data[block][key] === o;
+    return `<label class="radio-item${sel?' selected':''}" onclick="selectRadio('${block}','${key}','${esc(o)}',this)">
+      <input type="radio" name="${block}_${key}"${sel?' checked':''}> ${o}
+    </label>`;
+  }).join('') + '</div>';
+}
+
+function checkGroup(block, key, options, cols=2) {
+  return `<div class="check-grid col${cols}">` + options.map(o => {
+    const sel = (data[block][key]||[]).includes(o);
+    return `<label class="check-item${sel?' selected':''}" onclick="toggleCheck('${block}','${key}','${esc(o)}',this)">
+      <input type="checkbox"${sel?' checked':''}> ${o}
+    </label>`;
+  }).join('') + '</div>';
+}
+
+function ratingScale(block, key, low, high, max=5, color='#2c5f8a') {
+  const v = data[block][key] || 0;
+  let btns = '';
+  for(let n=1;n<=max;n++){
+    btns += `<button class="rating-btn${v===n?' selected':''}" style="--rc:${color}"
+      onclick="selectRating('${block}','${key}',${n},this.parentNode)">${n}</button>`;
+  }
+  return `<div style="margin:10px 0">
+    <div class="rating-row">${btns}</div>
+    <div class="rating-labels"><span>1 — ${low}</span><span>${max} — ${high}</span></div>
+  </div>`;
+}
+
+function esc(s) { return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTERACTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+function selectRadio(block, key, val, el) {
+  data[block][key] = val;
+  el.closest('.radio-stack').querySelectorAll('.radio-item').forEach(li => li.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+}
+
+function toggleCheck(block, key, val, el) {
+  let arr = data[block][key] || [];
+  if(arr.includes(val)) arr = arr.filter(x=>x!==val);
+  else arr = [...arr, val];
+  data[block][key] = arr;
+  el.classList.toggle('selected', arr.includes(val));
+  el.querySelector('input').checked = arr.includes(val);
+}
+
+function selectRating(block, key, val, container) {
+  data[block][key] = val;
+  container.querySelectorAll('.rating-btn').forEach((b,i) => b.classList.toggle('selected', i+1===val));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION RENDERERS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderConsent() {
+  return `
+  <div class="info-box">
+    <div class="info-box-label">INFORMED CONSENT & PURPOSE</div>
+    <p>This survey is part of a <strong>Faculty Development Programme (FDP)</strong> research study on Research-Innovation Integration. Your responses will be <strong>anonymised</strong> and used solely for academic research and publication.</p>
+    <p>Participation is voluntary. The survey takes approximately <strong>12–15 minutes</strong>. You may skip any question you are not comfortable answering.</p>
+  </div>
+  ${field('I agree to participate in this research study','',true,radioGroup('consent','agreed',['Yes, I consent to participate','No, I prefer not to participate']))}
+  ${field('Response anonymity preference','',false,radioGroup('consent','anonymous_str',['Keep my responses fully anonymous',"I'm okay being identified in aggregate reports"]))}
+  <div style="border-top:1px solid #dde5ea;padding-top:20px;margin-top:4px">
+    <div class="mono" style="font-size:10px;letter-spacing:2px;color:#7a8e9a;margin-bottom:14px">PARTICIPANT IDENTITY</div>
+    <div class="two-col">
+      ${field('Full Name','Optional if anonymous',false,inputEl('identity','name','Dr. / Prof. ...'))}
+      ${field('Email Address','For repository access only',false,inputEl('identity','email','you@institution.ac.in','email'))}
+      ${field('Institution / University','',true,inputEl('identity','institution','Name of institution'))}
+      ${field('Department / School','',true,inputEl('identity','department','Dept. of ...'))}
+      ${field('Designation','',true,selectEl('identity','designation',["Assistant Professor","Associate Professor","Professor","Professor & HOD","Dean / Director","Research Scientist","Post-Doctoral Fellow","Other"]))}
+      ${field('Years of Academic Experience','',true,selectEl('identity','yearsExperience',["0–2 years","3–5 years","6–10 years","11–20 years","21–30 years","30+ years"]))}
+    </div>
+    ${field('ORCID ID','If available — e.g. 0000-0001-2345-6789',false,inputEl('identity','orcid','0000-0000-0000-0000'))}
+  </div>`;
+}
+
+function renderResearch() {
+  return `
+  ${field('Primary Research Domain / Discipline','e.g. Mechanical Engineering, Biochemistry, Education, Management Science',true,inputEl('research','primaryDomain','Your primary field'))}
+  ${field('Sub-Domain or Specialisation','Be as specific as possible — this helps identify transdisciplinary connections',false,inputEl('research','subDomain','e.g. Additive Manufacturing, Epigenetics, EdTech...'))}
+  ${field('Top 5 Research Keywords','Comma-separated — used for network mapping across all 80 participants',false,inputEl('research','keywords','keyword1, keyword2, keyword3, ...'))}
+  ${field('Research Approach(es) you primarily use','',true,checkGroup('research','researchApproach',RESEARCH_APPROACHES,2))}
+  ${field('Your dominant research paradigm','',false,radioGroup('research','paradigm',PARADIGMS))}
+  ${field('Current research focus / active question','What problem are you working on right now? 2–3 sentences.',true,textareaEl('research','currentFocus','Describe the core problem or question your research addresses today...',3))}
+  ${field('Collaboration pattern(s)','',false,checkGroup('research','collaborationType',COLLAB_TYPES,2))}
+  ${field('Funding status of current research','',false,selectEl('research','fundingStatus',["Unfunded (self-driven)","Internally funded (seed grant)","Externally funded (DST / SERB / CSIR / AICTE etc.)","Industry-funded","International grant","Multi-agency","Currently seeking funding"]))}`;
+}
+
+function renderPublication() {
+  return `
+  <div class="two-col">
+    ${field('Total peer-reviewed publications','',true,selectEl('publication','totalPapers',["0","1–5","6–10","11–20","21–40","41–60","60+"]))}
+    ${field('Scopus / WoS indexed papers','',false,selectEl('publication','indexedPapers',["0","1–5","6–10","11–20","21–40","40+"]))}
+    ${field('h-index (approximate)','Leave blank if unsure',false,selectEl('publication','hIndex',["0","1–3","4–6","7–10","11–15","16–20","21+"]))}
+    ${field('Total citations (approximate)','',false,selectEl('publication','citations',["0","1–50","51–200","201–500","501–1000","1000–5000","5000+"]))}
+    ${field('Year of most recent publication','',false,selectEl('publication','lastPublicationYear',["2025","2024","2023","2022","2021","2020","Before 2020","Not published yet"]))}
+    ${field('Conference papers presented','',false,selectEl('publication','conferenceCount',["0","1–3","4–10","11–20","20+"]))}
+    ${field('Book chapters authored','',false,selectEl('publication','bookChapters',["0","1–3","4–10","10+"]))}
+    ${field('Patents filed or granted','',false,selectEl('publication','patents',["0","1 filed","2–3 filed","1 granted","2–5 granted","5+ granted"]))}
+  </div>
+  ${field('Types of venues you publish in','',true,checkGroup('publication','journalTypes',JOURNAL_TYPES,2))}
+  ${field('Open access publishing practice','',false,radioGroup('publication','openAccessPractice',["Always publish open access","Sometimes","Rarely — behind paywalls mostly","Never considered it","Would like to but cost is a barrier"]))}
+  ${field('What is your single biggest challenge in publishing?','Be candid — this data directly informs the FDP curriculum',true,textareaEl('publication','biggestPublicationChallenge','e.g. Time constraints, writing quality, finding the right journal...',3))}`;
+}
+
+function renderInnovation() {
+  const hp = data.innovation.hasActiveProject || '';
+  return `
+  ${field('Do you currently have an active innovation or applied research project?','',true,radioGroup('innovation','hasActiveProject',["Yes — actively working on it","Yes — at ideation stage","Was working on one (paused)","No, but interested","No, not on my radar"]))}
+  ${hp.startsWith('Yes') ? `
+    ${field('Brief description of your innovation project','What problem does it solve? Who is the beneficiary?',false,textareaEl('innovation','projectDescription','Describe your innovation — technology, service, process, or social innovation...',3))}
+    ${field('Technology / Innovation Readiness Stage','',false,radioGroup('innovation','projectStage',["Idea / Concept (TRL 1–2)","Proof of Concept (TRL 3–4)","Prototype developed (TRL 5–6)","Pilot tested (TRL 7)","Market ready / Deployed (TRL 8–9)"]))}
+  ` : ''}
+  ${field('Have you started or co-founded a startup / spin-off?','',false,radioGroup('innovation','startupOrSpinoff',["Yes — registered company","Yes — informal venture","In process of registering","Interested but haven't started","No"]))}
+  ${field('Industry collaboration experience','',false,radioGroup('innovation','industryCollaboration',["Active industry partner currently","Had industry partnerships in the past","Consultancy work (paid)","Informal connections only","None"]))}
+  ${field('What barriers prevent you from taking research to innovation?','Select all that apply',true,checkGroup('innovation','innovationBarriers',INNOVATION_BARRIERS,2))}
+  ${field('How do you currently think about creating value from your research?','Describe your approach or aspiration in 2–3 sentences',false,textareaEl('innovation','valueCreationApproach','e.g. Licensing IP, social impact projects, spin-off, writing for public audiences...',3))}
+  ${field('Awareness of IP (Intellectual Property) processes at your institution','',false,radioGroup('innovation','ipAwareness',["Very aware — have used them","Aware but haven't used","Heard about it, unclear on process","Not aware at all"]))}`;
+}
+
+function renderAitools() {
+  return `
+  ${field('Overall comfort level with AI tools for academic work','1 = Never used, 5 = Use daily across multiple tools',true,ratingScale('aitools','overallComfort','Never used','Power user'))}
+  ${field('AI tools you have used (even once)','',true,checkGroup('aitools','toolsUsed',AI_TOOLS,3))}
+  ${field('Contexts in which you have used AI tools','',false,checkGroup('aitools','usageContexts',AI_CONTEXTS,2))}
+  ${field('How do you currently use AI in your research process?','Describe specific use cases, or write "Not yet"',false,textareaEl('aitools','researchAiUse','e.g. I use ChatGPT to draft literature review summaries, Elicit for paper discovery...',2))}
+  ${field('How do you currently use AI in your teaching?','Describe specific use cases, or write "Not yet"',false,textareaEl('aitools','teachingAiUse','e.g. I use Canva AI for slide design, ChatGPT for quiz generation...',2))}
+  ${field('Concerns you have about AI in academia','',false,checkGroup('aitools','aiConcerns',AI_CONCERNS,2))}
+  ${field('How much opportunity do you see in AI for your research domain?','1 = Very little, 5 = Transformative potential',false,ratingScale('aitools','aiOpportunityRating','Little potential','Transformative',5,'#1a6b4a'))}
+  ${field('Which AI tools or capabilities would you most like to learn?','',false,textareaEl('aitools','aiToolsWantToLearn','e.g. AI for systematic reviews, AI image tools, AI coding assistants...',2))}`;
+}
+
+function renderIntegration() {
+  return `
+  ${field('Current level of teaching-research integration','1 = Fully separate, 5 = Fully integrated — I teach what I research',false,ratingScale('integration','currentIntegrationLevel','Fully separate','Fully integrated',5,'#7a3b6a'))}
+  ${field('How do you currently integrate research into teaching?','',false,checkGroup('integration','integrationMethods',INTEGRATION_METHODS,1))}
+  ${field('What is the single biggest challenge you face in integrating teaching with research?','This is a core research question — please be specific',true,textareaEl('integration','mainChallenge','e.g. Time pressure, separate appraisal systems, lack of student readiness, curriculum rigidity...',3))}
+  ${field('Familiarity with "First Principles Thinking" as a problem-solving approach','',false,radioGroup('integration','firstPrinciplesAwareness',["Very familiar — I apply it regularly","Heard of it, have some understanding","Came across the term but unfamiliar","Not heard of it before"]))}
+  ${field('Experience with transdisciplinary or interdisciplinary research/teaching','',false,radioGroup('integration','transdisciplinaryExp',["Active transdisciplinary projects","Some cross-disciplinary exposure","Interested but haven't done it yet","Works within own discipline only"]))}
+  ${field('Do you involve students in your research?','',false,radioGroup('integration','studentResearchInvolvement',["Yes — UG students","Yes — PG students","Yes — PhD students","Multiple levels","No, but interested","No"]))}
+  ${field('Your "deep reading" habit','Deep reading = slow, analytical, annotated engagement with academic texts',false,radioGroup('integration','deepReadingHabit',["Daily — it's a deliberate practice","Weekly","Occasionally when preparing courses","Rarely — mostly skim articles","Don't have a structured reading practice"]))}
+  ${field('Do you currently curate or create knowledge content for public audiences?','e.g. blog, YouTube, podcast, LinkedIn articles, book, popular science writing',false,radioGroup('integration','knowledgeCurationPractice',["Yes — actively and regularly","Yes — occasionally","Have done it once or twice","Interested but haven't started","No"]))}
+  ${field('What do you most hope to gain from this FDP session today?','',true,textareaEl('integration','fdpExpectation','Be specific — what shift in thinking, skill, or connection would make today worthwhile for you?',3))}`;
+}
+
+function renderAspirations() {
+  return `
+  ${field('Your single most important research or innovation goal in the next 12 months','One concrete, actionable goal — not a general aspiration',true,textareaEl('aspirations','oneYearGoal','e.g. Submit a paper to a Q1 journal by December, file a provisional patent...',2))}
+  ${field('If you could turn one piece of your research into an innovative product or service — what would it be?','Blue-sky thinking — no constraints. This seed idea feeds Activity E of the FDP session.',false,textareaEl('aspirations','innovationIdea','Describe the product/service, the problem it solves, and who benefits...',3))}
+  ${field('Are you open to research or innovation collaboration with other FDP participants?','Your response helps us build collaboration clusters from today\'s 80 participants',false,radioGroup('aspirations','collaborationInterest',["Yes — actively looking for collaborators","Yes — open if the right match emerges","Maybe — depends on the topic","Prefer solo work for now"]))}
+  ${field('One concrete action you commit to taking in the next 7 days','This becomes your public commitment — displayed (anonymously) at session close',true,textareaEl('aspirations','commitmentAction','e.g. I will create one infographic of my research and post it on LinkedIn...',2))}
+  ${field('Any other thoughts, suggestions, or context you\'d like to share with the research team?','',false,textareaEl('aspirations','additionalThoughts','Open space — share anything not captured above...',3))}
+  <div class="ethics-box">
+    <div class="ethics-label">DATA ETHICS NOTE</div>
+    <p style="font-size:12px;color:#2a3a2a;line-height:1.6">All responses are securely stored and will be anonymised before analysis. Aggregate findings will be shared with all participants. Individual responses will never be disclosed without explicit consent.</p>
+  </div>`;
+}
+
+const RENDERERS = [renderConsent, renderResearch, renderPublication, renderInnovation, renderAitools, renderIntegration, renderAspirations];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────────────────────────────────────
+function renderNav() {
+  const nav = document.getElementById('section-nav');
+  nav.innerHTML = SECTIONS.map((s,i) => {
+    let cls = '';
+    if(i === currentSection) cls = 'active';
+    else if(i < currentSection) cls = 'done';
+    return `<button class="snav-btn ${cls}" onclick="if(${i}<=${currentSection})goTo(${i})">${s.icon} ${s.label}</button>`;
+  }).join('');
+
+  document.getElementById('section-label').textContent = `Section ${currentSection+1} of ${SECTIONS.length} · ${SECTIONS[currentSection].label}`;
+  document.getElementById('section-title').textContent = SECTIONS[currentSection].label;
+  document.getElementById('nav-count').textContent = `${currentSection+1} / ${SECTIONS.length}`;
+  document.getElementById('progress-fill').style.width = `${Math.round((currentSection/SECTIONS.length)*100)}%`;
+
+  document.getElementById('btn-prev').disabled = currentSection === 0;
+  const isLast = currentSection === SECTIONS.length - 1;
+  document.getElementById('btn-next').style.display = isLast ? 'none' : '';
+  document.getElementById('btn-submit').style.display = isLast ? '' : 'none';
+}
+
+function renderBody() {
+  // sync anonymous_str to consent.anonymous before render
+  if(data.consent.anonymous_str === undefined) data.consent.anonymous_str = 'Keep my responses fully anonymous';
+  document.getElementById('section-body').innerHTML = RENDERERS[currentSection]();
+}
+
+function goTo(i) {
+  currentSection = i;
+  renderNav();
+  renderBody();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function nextSection() {
+  if(currentSection < SECTIONS.length - 1) goTo(currentSection + 1);
+}
+
+function prevSection() {
+  if(currentSection > 0) goTo(currentSection - 1);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBMIT
+// ─────────────────────────────────────────────────────────────────────────────
+async function submitSurvey() {
+  // Map anonymous_str back
+  data.consent.anonymous = data.consent.anonymous_str === 'Keep my responses fully anonymous';
+
+  if(!data.consent.agreed || data.consent.agreed === 'No, I prefer not to participate') {
+    alert('Please consent to participate before submitting.');
+    goTo(0); return;
+  }
+  if(!data.identity.institution || !data.identity.department) {
+    alert('Institution and Department are required fields.');
+    goTo(0); return;
+  }
+
+  try {
+    const res = await fetch('/api/submit', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    if(json.ok) {
+      document.getElementById('survey-app').style.display = 'none';
+      document.getElementById('thankyou').style.display = 'flex';
+      document.getElementById('commitment-display').textContent =
+        data.aspirations.commitmentAction || 'Check your email for next steps.';
+    } else {
+      alert('Submission error: ' + (json.error || 'Unknown error'));
+    }
+  } catch(e) {
+    alert('Network error. Please try again.');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+goTo(0);
+</script>
+{% endblock %}
