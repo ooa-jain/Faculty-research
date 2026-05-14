@@ -36,49 +36,42 @@
       {{ row('Institution', doc.identity.institution) }}
       {{ row('Department', doc.identity.department) }}
       {{ row('Designation', doc.identity.designation) }}
-      {{ row('Experience', doc.identity.yearsExperience) }}
+      {{ row('Experience', doc.identity.yearsExp) }}
       {{ row('ORCID', doc.identity.orcid) }}
     </div>
 
     <div class="card detail-section">
       <div class="detail-section-title">Research Profile</div>
-      {{ row('Primary Domain', doc.research.primaryDomain) }}
+      {{ row('Primary Domain', doc.research.domain) }}
       {{ row('Sub-Domain', doc.research.subDomain) }}
       {{ row('Keywords', doc.research.keywords) }}
-      {{ row('Approaches', doc.research.researchApproach) }}
+      {{ row('Approaches', doc.research.approaches) }}
       {{ row('Paradigm', doc.research.paradigm) }}
-      {{ row('Current Focus', doc.research.currentFocus) }}
-      {{ row('Collaboration Types', doc.research.collaborationType) }}
-      {{ row('Funding Status', doc.research.fundingStatus) }}
+      {{ row('Current Focus', doc.research.focus) }}
+      {{ row('Collaboration Types', doc.research.collabTypes) }}
+      {{ row('Funding Status', doc.research.funding) }}
     </div>
 
     <div class="card detail-section">
       <div class="detail-section-title">Publication History</div>
-      {{ row('Total Papers', doc.publication.totalPapers) }}
-      {{ row('Indexed Papers', doc.publication.indexedPapers) }}
+      {{ row('Total Papers', doc.publication.total) }}
+      {{ row('Indexed Papers', doc.publication.indexed) }}
       {{ row('h-Index', doc.publication.hIndex) }}
       {{ row('Citations', doc.publication.citations) }}
-      {{ row('Last Published', doc.publication.lastPublicationYear) }}
-      {{ row('Conference Papers', doc.publication.conferenceCount) }}
-      {{ row('Book Chapters', doc.publication.bookChapters) }}
+      {{ row('Last Published', doc.publication.lastYear) }}
+      {{ row('Conference Papers', doc.publication.conferences) }}
       {{ row('Patents', doc.publication.patents) }}
       {{ row('Journal Types', doc.publication.journalTypes) }}
-      {{ row('Open Access', doc.publication.openAccessPractice) }}
-      {{ row('Biggest Challenge', doc.publication.biggestPublicationChallenge) }}
+      {{ row('Biggest Challenge', doc.publication.biggestChallenge) }}
     </div>
-  </div>
 
-  <!-- Right column -->
-  <div>
     <div class="card detail-section">
       <div class="detail-section-title">Innovation Projects</div>
-      {{ row('Active Project', doc.innovation.hasActiveProject) }}
-      {{ row('Project Description', doc.innovation.projectDescription) }}
-      {{ row('TRL Stage', doc.innovation.projectStage) }}
-      {{ row('Startup / Spinoff', doc.innovation.startupOrSpinoff) }}
-      {{ row('Industry Collaboration', doc.innovation.industryCollaboration) }}
-      {{ row('Barriers', doc.innovation.innovationBarriers) }}
-      {{ row('Value Creation Approach', doc.innovation.valueCreationApproach) }}
+      {{ row('Active Project', doc.innovation.hasProject) }}
+      {{ row('Project Description', doc.innovation.projectDesc) }}
+      {{ row('TRL Stage', doc.innovation.stage) }}
+      {{ row('Industry Collaboration', doc.innovation.industry) }}
+      {{ row('Barriers', doc.innovation.barriers) }}
       {{ row('IP Awareness', doc.innovation.ipAwareness) }}
     </div>
 
@@ -87,24 +80,70 @@
       {{ row('Overall Comfort', doc.aitools.overallComfort) }}
       {{ row('Tools Used', doc.aitools.toolsUsed) }}
       {{ row('Usage Contexts', doc.aitools.usageContexts) }}
-      {{ row('AI in Research', doc.aitools.researchAiUse) }}
-      {{ row('AI in Teaching', doc.aitools.teachingAiUse) }}
-      {{ row('AI Concerns', doc.aitools.aiConcerns) }}
-      {{ row('Opportunity Rating', doc.aitools.aiOpportunityRating) }}
-      {{ row('Want to Learn', doc.aitools.aiToolsWantToLearn) }}
+      {{ row('AI in Research', doc.aitools.researchUse) }}
+      {{ row('AI in Teaching', doc.aitools.teachingUse) }}
+      {{ row('AI Concerns', doc.aitools.concerns) }}
+      {{ row('Opportunity Rating', doc.aitools.opportunityRating) }}
+    </div>
+  </div>
+
+  <!-- Right column -->
+  <div>
+    <div class="card detail-section">
+      <div class="detail-section-title">AI for Global Publication</div>
+      {{ row('AI Writing Comfort', doc.aipublication.aiWritingComfort) }}
+      {{ row('Lit Review Use', doc.aipublication.aiLitReviewUse) }}
+      {{ row('Journal Match', doc.aipublication.aiJournalMatch) }}
+      {{ row('Ethics Stance', doc.aipublication.aiEthicsStance) }}
+      {{ row('Co-Author View', doc.aipublication.aiCoAuthorView) }}
+      {{ row('Data Analysis', doc.aipublication.aiDataAnalysis) }}
+      {{ row('Global Collab Interest', doc.aipublication.globalCollabInterest) }}
+      {{ row('Open Access Awareness', doc.aipublication.openAccessAwareness) }}
+      {{ row('Pre-reg Awareness', doc.aipublication.preregistrationAwareness) }}
+      {{ row('Altmetrics', doc.aipublication.altmetricsAwareness) }}
+      {{ row('Barriers', doc.aipublication.aiPublicationBarriers) }}
+      {{ row('Opportunities', doc.aipublication.aiPublicationOpportunities) }}
+      {{ row('Ambition', doc.aipublication.publishingAmbition) }}
     </div>
 
     <div class="card detail-section">
-      <div class="detail-section-title">Teaching-Research Integration</div>
-      {{ row('Integration Level', doc.integration.currentIntegrationLevel) }}
-      {{ row('Methods Used', doc.integration.integrationMethods) }}
+      <div class="detail-section-title">Learning–Research Integration</div>
+      {{ row('Integration Level', doc.integration.integrationLevel) }}
+      {{ row('Integration Methods', doc.integration.integrationMethods) }}
       {{ row('Main Challenge', doc.integration.mainChallenge) }}
-      {{ row('First Principles Awareness', doc.integration.firstPrinciplesAwareness) }}
-      {{ row('Transdisciplinary Exp.', doc.integration.transdisciplinaryExp) }}
-      {{ row('Student Involvement', doc.integration.studentResearchInvolvement) }}
-      {{ row('Deep Reading Habit', doc.integration.deepReadingHabit) }}
-      {{ row('Knowledge Curation', doc.integration.knowledgeCurationPractice) }}
-      {{ row('FDP Expectation', doc.integration.fdpExpectation) }}
+      {{ row('Notional Hours Awareness', doc.integration.notionalHoursAwareness) }}
+      {{ row('Notional Hours Use', doc.integration.notionalHoursUse) }}
+      {{ row('Experiential Methods', doc.integration.experientialLearningMethods) }}
+      {{ row('Experiential Rating', doc.integration.experientialLearningRating) }}
+      {{ row('Research as Learning', doc.integration.researchAsLearningView) }}
+      {{ row('Assessment Link', doc.integration.assessmentResearchLink) }}
+    </div>
+
+    <div class="card detail-section">
+      <div class="detail-section-title">Beyond the Classroom</div>
+      {{ row('Activities', doc.boundaries.beyondClassroomActivities) }}
+      {{ row('Innovation Support', doc.boundaries.studentInnovationSupport) }}
+      {{ row('Startup Ecosystem', doc.boundaries.startupEcosystemRole) }}
+      {{ row('Industry Exposure', doc.boundaries.industryExposureActivities) }}
+      {{ row('SDG Alignment', doc.boundaries.sdgAlignment) }}
+      {{ row('FDP Interest', doc.boundaries.fdpInterestedInJoining) }}
+      {{ row('FDP Topics', doc.boundaries.fdpTopicsInterested) }}
+      {{ row('Policy Engagement', doc.boundaries.policyEngagement) }}
+    </div>
+
+    <div class="card detail-section">
+      <div class="detail-section-title">Faculty Career Pathways</div>
+      {{ row('Primary Identity', doc.career.primaryIdentity) }}
+      {{ row('Current Role', doc.career.currentRole) }}
+      {{ row('Future Pathway', doc.career.futurePathway) }}
+      {{ row('5-Year Vision', doc.career.fiveYearVision) }}
+      {{ row('Timeline', doc.career.timelineAspiration) }}
+      {{ row('Skill Gaps', doc.career.skillGaps) }}
+      {{ row('Upskill Priorities', doc.career.upskillPriorities) }}
+      {{ row('Support Needed', doc.career.supportNeeded) }}
+      {{ row('Mentoring Role', doc.career.mentoringRole) }}
+      {{ row('Intl Aspiration', doc.career.internationalAspiration) }}
+      {{ row('Career Obstacles', doc.career.careerObstacles) }}
     </div>
 
     <div class="card detail-section">

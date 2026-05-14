@@ -102,7 +102,7 @@ def admin_dashboard():
     designation_data = list(responses_col.aggregate(pipeline_designation))
 
     pipeline_domain = [
-        {"$group": {"_id": "$research.primaryDomain", "count": {"$sum": 1}}},
+        {"$group": {"_id": "$research.domain", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
         {"$limit": 10}
     ]
@@ -124,7 +124,7 @@ def admin_dashboard():
 
     # Recent submissions
     recent = list(responses_col.find(
-        {}, {"identity": 1, "submitted_at": 1, "research.primaryDomain": 1,
+        {}, {"identity": 1, "submitted_at": 1, "research.domain": 1,
              "aitools.overallComfort": 1, "consent.anonymous": 1}
     ).sort("submitted_at", DESCENDING).limit(10))
 

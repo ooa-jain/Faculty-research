@@ -2,468 +2,985 @@
 {% block title %}FDP Faculty Research & Innovation Survey{% endblock %}
 
 {% block extra_head %}
+<!-- Load React -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<!-- Load Babel -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  /* ── Layout ── */
-  .topbar { background: #0d1a22; color: white; }
-  .topbar-inner { max-width: 780px; margin: 0 auto; padding: 18px 24px 14px; }
-  .topbar-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; color: #4a9e6a; margin-bottom: 6px; text-transform: uppercase; }
-  .topbar h1 { font-family: 'Playfair Display', serif; font-size: clamp(18px,3vw,26px); font-weight: 900; line-height: 1.2; }
-  .topbar-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: #6a8a9a; margin-top: 8px; letter-spacing: 1px; }
-  .progress-bar { height: 4px; background: #1a2a35; }
-  .progress-fill { height: 100%; background: linear-gradient(90deg,#4a9e6a,#2c5f8a); transition: width .4s ease; }
-
-  .main { max-width: 780px; margin: 0 auto; padding: 0 16px 60px; }
-
-  /* ── Section Nav ── */
-  .section-nav { display: flex; gap: 0; overflow-x: auto; margin: 0 -16px; padding: 0 16px; border-bottom: 1px solid #c8c0b0; background: #e8e0d0; }
-  .snav-btn { padding: 10px 14px; border: none; border-bottom: 3px solid transparent; background: transparent; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .5px; color: #9a9080; white-space: nowrap; text-transform: uppercase; transition: all .15s; }
-  .snav-btn.active { border-bottom-color: #2c5f8a; color: #2c5f8a; }
-  .snav-btn.done { color: #4a6a5a; cursor: pointer; }
-
-  /* ── Section Panel ── */
-  .section-panel { background: white; border: 1px solid #c8c0b0; border-top: none; padding: 28px; }
-  .section-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; color: #c0392b; margin-bottom: 6px; text-transform: uppercase; }
-  .section-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; padding-bottom: 14px; margin-bottom: 24px; border-bottom: 2px solid #0d1a22; }
-
-  /* ── Fields ── */
-  .field { margin-bottom: 22px; }
-  .field-label { font-family: 'Libre Baskerville', serif; font-weight: 700; font-size: 13.5px; color: #1a2a35; margin-bottom: 3px; }
-  .field-hint { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #7a8e9a; margin-bottom: 6px; letter-spacing: .5px; }
-  .req { color: #c0392b; font-size: 11px; }
-
-  input[type=text], input[type=email], textarea, select {
-    width: 100%; padding: 9px 12px; border: 1px solid #c8d5e0; border-radius: 3px;
-    font-family: 'Libre Baskerville', serif; font-size: 13px; color: #1a2a35;
-    background: white; outline: none; box-sizing: border-box;
+  body {
+    margin: 0;
+    padding: 0;
+    background: #F8FAFC;
   }
-  textarea { resize: vertical; }
-  select { appearance: auto; }
-
-  /* ── Checkbox / Radio Groups ── */
-  .check-grid { display: grid; gap: 6px 12px; margin: 8px 0; }
-  .check-grid.col2 { grid-template-columns: 1fr 1fr; }
-  .check-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
-  .check-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #2a3a45; padding: 6px 8px; border: 1px solid #dde5ea; border-radius: 3px; transition: all .12s; background: white; }
-  .check-item.selected { border-color: #2c5f8a; background: #eef4f9; }
-  .check-item input { accent-color: #2c5f8a; }
-
-  .radio-stack { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
-  .radio-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #2a3a45; padding: 7px 10px; border: 1px solid #dde5ea; border-radius: 3px; background: white; transition: all .12s; }
-  .radio-item.selected { border-color: #2c5f8a; background: #eef4f9; }
-  .radio-item input { accent-color: #2c5f8a; }
-
-  /* ── Rating Scale ── */
-  .rating-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .rating-btn { width: 44px; height: 44px; border: 2px solid #c8d5e0; background: white; color: #4a6070; border-radius: 4px; cursor: pointer; font-family: 'DM Mono', monospace; font-weight: 700; font-size: 15px; transition: all .15s; }
-  .rating-btn.selected { background: var(--rc, #2c5f8a); border-color: var(--rc, #2c5f8a); color: white; }
-  .rating-labels { display: flex; justify-content: space-between; margin-top: 4px; font-family: 'DM Mono', monospace; font-size: 10px; color: #7a8e9a; letter-spacing: 1px; }
-
-  /* ── Two-col grid ── */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
-
-  /* ── Nav Buttons ── */
-  .nav-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid #c8c0b0; }
-  .btn-prev { padding: 10px 22px; border: 2px solid #0d1a22; background: white; color: #0d1a22; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; }
-  .btn-prev:disabled { opacity: .3; cursor: not-allowed; }
-  .btn-next { padding: 10px 22px; border: none; background: #0d1a22; color: white; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; }
-  .btn-submit { padding: 10px 26px; border: none; background: #2c5f8a; color: white; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; }
-  .nav-count { font-family: 'DM Mono', monospace; font-size: 10px; color: #7a8e9a; letter-spacing: 1px; }
-  .footer-note { font-family: 'DM Mono', monospace; font-size: 9px; color: #9a9080; letter-spacing: 1px; text-align: center; margin-top: 8px; }
-
-  /* ── Info box ── */
-  .info-box { background: #eef4f9; border: 1px solid #b8cedd; border-left: 4px solid #2c5f8a; padding: 16px 18px; margin-bottom: 24px; border-radius: 2px; }
-  .info-box-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #2c5f8a; margin-bottom: 6px; }
-  .info-box p { font-size: 13px; line-height: 1.7; color: #2a3a45; margin-bottom: 8px; }
-  .ethics-box { background: #f0f7f0; border: 1px solid #a8c9a8; border-left: 4px solid #2a7a2a; padding: 14px 16px; border-radius: 2px; margin-top: 8px; }
-  .ethics-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #2a7a2a; margin-bottom: 6px; }
-
-  /* ── Thank-you ── */
-  .thankyou { min-height: 100vh; background: #0d1a22; display: flex; align-items: center; justify-content: center; }
-  .thankyou-inner { text-align: center; color: white; max-width: 500px; padding: 40px; }
-  .thankyou-icon { font-family: 'DM Mono', monospace; font-size: 48px; color: #4a9e6a; margin-bottom: 20px; }
-  .thankyou h2 { font-size: 28px; font-weight: 900; margin-bottom: 12px; }
-  .thankyou p { font-size: 15px; color: #a0b8c8; line-height: 1.7; margin-bottom: 20px; }
-  .thankyou-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: #4a9e6a; letter-spacing: 2px; }
-  .commitment-box { margin-top: 30px; padding: 16px 20px; border: 1px solid #2a4a5a; border-radius: 4px; }
-  .commitment-label { font-family: 'DM Mono', monospace; font-size: 10px; color: #6a8a9a; letter-spacing: 1px; margin-bottom: 8px; }
-  .commitment-text { font-size: 14px; color: #d0e8f0; font-style: italic; }
-
-  @media(max-width:600px){
-    .two-col { grid-template-columns: 1fr; }
-    .check-grid.col3 { grid-template-columns: 1fr 1fr; }
-    .check-grid.col2 { grid-template-columns: 1fr; }
+  .top-bar-container {
+    background: #FFFFFF;
+    color: #1E293B;
+    padding: 0;
+    border-bottom: 1px solid #E2E8F0;
+  }
+  .top-bar-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 28px 16px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: space-between;
+  }
+  .top-bar-text {
+    flex: 1;
+  }
+  .top-bar-logo {
+    max-width: 120px;
+  }
+  .top-bar-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(20px, 3.5vw, 28px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin: 0;
+    margin-bottom: 12px;
+    color: #1E293B;
+  }
+  .top-bar-subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #00B4A6;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .section-tabs {
+    display: flex;
+    overflow-x: auto;
+    border-top: 1px solid #E2E8F0;
+    background: #F8FAFC;
+  }
+  .section-tab-btn {
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  @media(max-width: 600px) {
+    .top-bar-inner {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 20px 12px;
+    }
+    .top-bar-logo {
+      max-width: 100px;
+      align-self: flex-start;
+    }
+    .top-bar-title {
+      font-size: 22px;
+    }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- THANK-YOU (hidden initially) -->
-<div class="thankyou" id="thankyou" style="display:none">
-  <div class="thankyou-inner">
-    <div class="thankyou-icon">◈</div>
-    <h2>Thank You</h2>
-    <p>Your responses have been recorded. You are now part of a research dataset of <strong style="color:white">80 faculty innovators</strong>. Your data will inform both the FDP session and a publishable research paper.</p>
-    <p class="thankyou-tag">RESEARCH DATA POINT #1 — CAPTURED</p>
-    <div class="commitment-box">
-      <div class="commitment-label">YOUR COMMITMENT FOR THIS WEEK</div>
-      <div class="commitment-text" id="commitment-display">—</div>
-    </div>
-  </div>
-</div>
+<div id="root"></div>
 
-<!-- SURVEY FORM -->
-<div id="survey-app">
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="topbar-label">Faculty Development Programme · Research Data Point #1</div>
-      <h1>Faculty Research &amp; Innovation<br>Profiling Survey</h1>
-      <div class="topbar-sub">N=80 participants · Mixed-methods research instrument · Pre-session</div>
-    </div>
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-  </div>
+{% raw %}
+<script type="text/babel">
+const { useState, useEffect } = React;
 
-  <div class="main">
-    <!-- Section nav -->
-    <div class="section-nav" id="section-nav"></div>
-
-    <!-- Section panel -->
-    <div class="section-panel">
-      <div class="section-label" id="section-label"></div>
-      <div class="section-title" id="section-title"></div>
-      <div id="section-body"></div>
-    </div>
-
-    <!-- Nav row -->
-    <div class="nav-row">
-      <button class="btn-prev" id="btn-prev" onclick="prevSection()">← PREVIOUS</button>
-      <div class="nav-count" id="nav-count"></div>
-      <button class="btn-next" id="btn-next" onclick="nextSection()">NEXT →</button>
-      <button class="btn-submit" id="btn-submit" onclick="submitSurvey()" style="display:none">SUBMIT SURVEY ◈</button>
-    </div>
-    <div class="footer-note">DATA IS ANONYMISED · FOR RESEARCH USE ONLY · FDP SESSION — RESEARCH INNOVATION &amp; KNOWLEDGE CREATION</div>
-  </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-// ─────────────────────────────────────────────────────────────────────────────
-// DATA MODEL
-// ─────────────────────────────────────────────────────────────────────────────
-const data = {
-  consent:     { agreed: "", anonymous: true },
-  identity:    { name:"", institution:"", department:"", designation:"", yearsExperience:"", email:"", orcid:"" },
-  research:    { primaryDomain:"", subDomain:"", keywords:"", researchApproach:[], paradigm:"", currentFocus:"", collaborationType:[], fundingStatus:"" },
-  publication: { totalPapers:"", indexedPapers:"", hIndex:"", citations:"", journalTypes:[], lastPublicationYear:"", conferenceCount:"", bookChapters:"", patents:"", openAccessPractice:"", biggestPublicationChallenge:"" },
-  innovation:  { hasActiveProject:"", projectDescription:"", projectStage:"", startupOrSpinoff:"", industryCollaboration:"", innovationBarriers:[], valueCreationApproach:"", ipAwareness:"" },
-  aitools:     { overallComfort:0, toolsUsed:[], usageContexts:[], researchAiUse:"", teachingAiUse:"", aiConcerns:[], aiOpportunityRating:0, aiToolsWantToLearn:"" },
-  integration: { currentIntegrationLevel:0, integrationMethods:[], mainChallenge:"", firstPrinciplesAwareness:"", transdisciplinaryExp:"", studentResearchInvolvement:"", deepReadingHabit:"", knowledgeCurationPractice:"", fdpExpectation:"" },
-  aspirations: { oneYearGoal:"", innovationIdea:"", collaborationInterest:"", commitmentAction:"", additionalThoughts:"" },
+// ─── PALETTE ──────────────────────────────────────────────────────────────────
+const C = {
+  ink: "#0D1117", ink2: "#161B27", ink3: "#1E2535",
+  teal: "#00B4A6", tealLt: "#E0F7F5",
+  violet: "#7C3AED", violetLt:"#EDE9FF",
+  amber: "#D97706", amberLt: "#FEF3C7",
+  coral: "#E05252", coralLt: "#FEE2E2",
+  emerald: "#059669", emeraldLt:"#D1FAE5",
+  gold: "#F59E0B", slate: "#475569",
+  muted: "#94A3B8", border: "#E2E8F0",
+  bg: "#F8FAFC", white: "#FFFFFF",
+  text: "#1E293B", text2: "#475569",
 };
 
 const SECTIONS = [
-  { id:"consent",     label:"Consent & Identity",           icon:"◈" },
-  { id:"research",    label:"Research Profile",             icon:"◉" },
-  { id:"publication", label:"Publication History",          icon:"◎" },
-  { id:"innovation",  label:"Innovation Projects",          icon:"◐" },
-  { id:"aitools",     label:"AI Tool Comfort",              icon:"◑" },
-  { id:"integration", label:"Teaching-Research Integration",icon:"◒" },
-  { id:"aspirations", label:"Aspirations & Commitments",    icon:"◓" },
+  { id:"consent", label:"Consent & Identity", icon:"◈", color: C.teal },
+  { id:"research", label:"Research Profile", icon:"◉", color: C.violet },
+  { id:"publication", label:"Publication History", icon:"◎", color: C.amber },
+  { id:"innovation", label:"Innovation Projects", icon:"◐", color: C.coral },
+  { id:"aitools", label:"AI Tools & Research", icon:"◑", color: C.teal },
+  { id:"aipublication",label:"AI for Global Publication", icon:"◆", color: C.emerald },
+  { id:"integration", label:"Learning–Research Integration",icon:"◒", color: C.violet },
+  { id:"boundaries", label:"Beyond the Classroom", icon:"⬡", color: C.coral },
+  { id:"career", label:"Faculty Career Pathways", icon:"◓", color: C.amber },
+  { id:"aspirations", label:"Aspirations & Commitments", icon:"★", color: C.teal },
 ];
 
-const RESEARCH_APPROACHES = ["Quantitative","Qualitative","Mixed Methods","Experimental","Theoretical","Computational","Design-based","Action Research"];
-const PARADIGMS = ["Positivist","Interpretivist","Critical","Pragmatist","Constructivist","Post-positivist"];
-const COLLAB_TYPES = ["Solo research","Within institution","Inter-institutional","International","Industry-academia","Citizen science"];
-const JOURNAL_TYPES = ["Scopus indexed","Web of Science","UGC-CARE","Predatory (knowingly)","Open access","High Impact Factor (>3)","Conference proceedings"];
-const INNOVATION_BARRIERS = ["Lack of time","No funding","Institutional support","Awareness of IP/TRL","Industry connect","Entrepreneurial mindset","Regulatory hurdles","Team gaps"];
-const AI_TOOLS = ["ChatGPT","Claude","Gemini","Copilot","Perplexity","Elicit","ResearchRabbit","Scite.ai","Consensus","Canva AI","Napkin.ai","Gamma","Grammarly AI","NotebookLM","None yet"];
-const AI_CONTEXTS = ["Literature review","Writing assistance","Data analysis","Teaching materials","Presentation design","Research ideation","Grant writing","Code generation","None"];
-const AI_CONCERNS = ["Academic integrity","Data privacy","Over-reliance","Job displacement","Misinformation","Bias in outputs","No concerns"];
-const INTEGRATION_METHODS = ["Assigning research papers to students","Student research projects","Citing own research in lectures","Problem-based learning from research","Live lab demonstrations","Research-informed curriculum design","Co-authoring with students","None currently"];
-
-let currentSection = 0;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BUILDER HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
-function field(label, hint, required, inner) {
-  return `<div class="field">
-    <div class="field-label">${label}${required?'<span class="req"> *</span>':''}</div>
-    ${hint?`<div class="field-hint">${hint}</div>`:''}
-    ${inner}
-  </div>`;
-}
-
-function inputEl(block, key, placeholder, type='text') {
-  const v = data[block][key] || '';
-  return `<input type="${type}" value="${esc(v)}" placeholder="${placeholder}"
-    onchange="data.${block}.${key}=this.value">`;
-}
-
-function textareaEl(block, key, placeholder, rows=3) {
-  const v = data[block][key] || '';
-  return `<textarea rows="${rows}" placeholder="${placeholder}"
-    onchange="data.${block}.${key}=this.value">${esc(v)}</textarea>`;
-}
-
-function selectEl(block, key, options, placeholder) {
-  const v = data[block][key] || '';
-  let opts = `<option value="">${placeholder||'Select…'}</option>`;
-  options.forEach(o => opts += `<option value="${o}"${v===o?' selected':''}>${o}</option>`);
-  return `<select onchange="data.${block}.${key}=this.value">${opts}</select>`;
-}
-
-function radioGroup(block, key, options) {
-  return '<div class="radio-stack">' + options.map(o => {
-    const sel = data[block][key] === o;
-    return `<label class="radio-item${sel?' selected':''}" onclick="selectRadio('${block}','${key}','${esc(o)}',this)">
-      <input type="radio" name="${block}_${key}"${sel?' checked':''}> ${o}
-    </label>`;
-  }).join('') + '</div>';
-}
-
-function checkGroup(block, key, options, cols=2) {
-  return `<div class="check-grid col${cols}">` + options.map(o => {
-    const sel = (data[block][key]||[]).includes(o);
-    return `<label class="check-item${sel?' selected':''}" onclick="toggleCheck('${block}','${key}','${esc(o)}',this)">
-      <input type="checkbox"${sel?' checked':''}> ${o}
-    </label>`;
-  }).join('') + '</div>';
-}
-
-function ratingScale(block, key, low, high, max=5, color='#2c5f8a') {
-  const v = data[block][key] || 0;
-  let btns = '';
-  for(let n=1;n<=max;n++){
-    btns += `<button class="rating-btn${v===n?' selected':''}" style="--rc:${color}"
-      onclick="selectRating('${block}','${key}',${n},this.parentNode)">${n}</button>`;
-  }
-  return `<div style="margin:10px 0">
-    <div class="rating-row">${btns}</div>
-    <div class="rating-labels"><span>1 — ${low}</span><span>${max} — ${high}</span></div>
-  </div>`;
-}
-
-function esc(s) { return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INTERACTIONS
-// ─────────────────────────────────────────────────────────────────────────────
-function selectRadio(block, key, val, el) {
-  data[block][key] = val;
-  el.closest('.radio-stack').querySelectorAll('.radio-item').forEach(li => li.classList.remove('selected'));
-  el.classList.add('selected');
-  el.querySelector('input').checked = true;
-}
-
-function toggleCheck(block, key, val, el) {
-  let arr = data[block][key] || [];
-  if(arr.includes(val)) arr = arr.filter(x=>x!==val);
-  else arr = [...arr, val];
-  data[block][key] = arr;
-  el.classList.toggle('selected', arr.includes(val));
-  el.querySelector('input').checked = arr.includes(val);
-}
-
-function selectRating(block, key, val, container) {
-  data[block][key] = val;
-  container.querySelectorAll('.rating-btn').forEach((b,i) => b.classList.toggle('selected', i+1===val));
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SECTION RENDERERS
-// ─────────────────────────────────────────────────────────────────────────────
-function renderConsent() {
-  return `
-  <div class="info-box">
-    <div class="info-box-label">INFORMED CONSENT & PURPOSE</div>
-    <p>This survey is part of a <strong>Faculty Development Programme (FDP)</strong> research study on Research-Innovation Integration. Your responses will be <strong>anonymised</strong> and used solely for academic research and publication.</p>
-    <p>Participation is voluntary. The survey takes approximately <strong>12–15 minutes</strong>. You may skip any question you are not comfortable answering.</p>
-  </div>
-  ${field('I agree to participate in this research study','',true,radioGroup('consent','agreed',['Yes, I consent to participate','No, I prefer not to participate']))}
-  ${field('Response anonymity preference','',false,radioGroup('consent','anonymous_str',['Keep my responses fully anonymous',"I'm okay being identified in aggregate reports"]))}
-  <div style="border-top:1px solid #dde5ea;padding-top:20px;margin-top:4px">
-    <div class="mono" style="font-size:10px;letter-spacing:2px;color:#7a8e9a;margin-bottom:14px">PARTICIPANT IDENTITY</div>
-    <div class="two-col">
-      ${field('Full Name','Optional if anonymous',false,inputEl('identity','name','Dr. / Prof. ...'))}
-      ${field('Email Address','For repository access only',false,inputEl('identity','email','you@institution.ac.in','email'))}
-      ${field('Institution / University','',true,inputEl('identity','institution','Name of institution'))}
-      ${field('Department / School','',true,inputEl('identity','department','Dept. of ...'))}
-      ${field('Designation','',true,selectEl('identity','designation',["Assistant Professor","Associate Professor","Professor","Professor & HOD","Dean / Director","Research Scientist","Post-Doctoral Fellow","Other"]))}
-      ${field('Years of Academic Experience','',true,selectEl('identity','yearsExperience',["0–2 years","3–5 years","6–10 years","11–20 years","21–30 years","30+ years"]))}
+function SegmentHeader({ icon, label, color, subtitle, visual }) {
+  return (
+    <div style={{
+      background: `linear-gradient(135deg, ${color}12 0%, ${color}05 100%)`,
+      border: `1px solid ${color}30`,
+      borderLeft: `5px solid ${color}`,
+      borderRadius: "0 12px 12px 0",
+      padding: "20px 24px 16px",
+      marginBottom: 28,
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      <div style={{
+        position: "absolute", top: -20, right: -20,
+        width: 140, height: 140,
+        borderRadius: "50%",
+        background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
+        pointerEvents: "none",
+      }} />
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, position: "relative" }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 10,
+          background: `linear-gradient(135deg, ${color} 0%, ${color}CC 100%)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 20, color: "#fff", flexShrink: 0,
+          boxShadow: `0 4px 12px ${color}40`,
+        }}>{icon}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize: 10, letterSpacing: 3, color, textTransform:"uppercase", marginBottom: 4, fontWeight: 600 }}>
+            Survey Section
+          </div>
+          <div style={{ fontFamily:"'Playfair Display',Georgia,serif", fontSize: 20, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>
+            {label}
+          </div>
+          {subtitle && (
+            <div style={{ fontFamily:"'Lora',Georgia,serif", fontSize: 13, color: C.text2, marginTop: 5, lineHeight: 1.5, fontStyle:"italic" }}>
+              {subtitle}
+            </div>
+          )}
+        </div>
+      </div>
+      {visual && (
+        <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${color}20` }}>
+          {visual}
+        </div>
+      )}
     </div>
-    ${field('ORCID ID','If available — e.g. 0000-0001-2345-6789',false,inputEl('identity','orcid','0000-0000-0000-0000'))}
-  </div>`;
+  );
 }
 
-function renderResearch() {
-  return `
-  ${field('Primary Research Domain / Discipline','e.g. Mechanical Engineering, Biochemistry, Education, Management Science',true,inputEl('research','primaryDomain','Your primary field'))}
-  ${field('Sub-Domain or Specialisation','Be as specific as possible — this helps identify transdisciplinary connections',false,inputEl('research','subDomain','e.g. Additive Manufacturing, Epigenetics, EdTech...'))}
-  ${field('Top 5 Research Keywords','Comma-separated — used for network mapping across all 80 participants',false,inputEl('research','keywords','keyword1, keyword2, keyword3, ...'))}
-  ${field('Research Approach(es) you primarily use','',true,checkGroup('research','researchApproach',RESEARCH_APPROACHES,2))}
-  ${field('Your dominant research paradigm','',false,radioGroup('research','paradigm',PARADIGMS))}
-  ${field('Current research focus / active question','What problem are you working on right now? 2–3 sentences.',true,textareaEl('research','currentFocus','Describe the core problem or question your research addresses today...',3))}
-  ${field('Collaboration pattern(s)','',false,checkGroup('research','collaborationType',COLLAB_TYPES,2))}
-  ${field('Funding status of current research','',false,selectEl('research','fundingStatus',["Unfunded (self-driven)","Internally funded (seed grant)","Externally funded (DST / SERB / CSIR / AICTE etc.)","Industry-funded","International grant","Multi-agency","Currently seeking funding"]))}`;
+function Divider({ color = C.teal, label }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap: 12, margin:"24px 0 20px" }}>
+      <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${color}60, transparent)` }} />
+      {label && (
+        <span style={{ fontFamily:"'DM Mono',monospace", fontSize: 9, color, letterSpacing: 2, textTransform:"uppercase", whiteSpace:"nowrap" }}>
+          {label}
+        </span>
+      )}
+      <div style={{ flex: 1, height: 1, background: `linear-gradient(270deg, ${color}60, transparent)` }} />
+    </div>
+  );
 }
 
-function renderPublication() {
-  return `
-  <div class="two-col">
-    ${field('Total peer-reviewed publications','',true,selectEl('publication','totalPapers',["0","1–5","6–10","11–20","21–40","41–60","60+"]))}
-    ${field('Scopus / WoS indexed papers','',false,selectEl('publication','indexedPapers',["0","1–5","6–10","11–20","21–40","40+"]))}
-    ${field('h-index (approximate)','Leave blank if unsure',false,selectEl('publication','hIndex',["0","1–3","4–6","7–10","11–15","16–20","21+"]))}
-    ${field('Total citations (approximate)','',false,selectEl('publication','citations',["0","1–50","51–200","201–500","501–1000","1000–5000","5000+"]))}
-    ${field('Year of most recent publication','',false,selectEl('publication','lastPublicationYear',["2025","2024","2023","2022","2021","2020","Before 2020","Not published yet"]))}
-    ${field('Conference papers presented','',false,selectEl('publication','conferenceCount',["0","1–3","4–10","11–20","20+"]))}
-    ${field('Book chapters authored','',false,selectEl('publication','bookChapters',["0","1–3","4–10","10+"]))}
-    ${field('Patents filed or granted','',false,selectEl('publication','patents',["0","1 filed","2–3 filed","1 granted","2–5 granted","5+ granted"]))}
-  </div>
-  ${field('Types of venues you publish in','',true,checkGroup('publication','journalTypes',JOURNAL_TYPES,2))}
-  ${field('Open access publishing practice','',false,radioGroup('publication','openAccessPractice',["Always publish open access","Sometimes","Rarely — behind paywalls mostly","Never considered it","Would like to but cost is a barrier"]))}
-  ${field('What is your single biggest challenge in publishing?','Be candid — this data directly informs the FDP curriculum',true,textareaEl('publication','biggestPublicationChallenge','e.g. Time constraints, writing quality, finding the right journal...',3))}`;
+function ScaleVisual({ value, onChange, low, high, color, max = 5 }) {
+  return (
+    <div style={{ margin:"8px 0" }}>
+      <div style={{ display:"flex", gap: 6, flexWrap:"wrap" }}>
+        {Array.from({length: max},(_,i)=>i+1).map(n => (
+          <button key={n} onClick={()=>onChange(n)}
+            style={{
+              width: 46, height: 46, border: `2px solid ${value===n ? color : C.border}`,
+              background: value===n ? `linear-gradient(135deg, ${color}, ${color}CC)` : C.white,
+              color: value===n ? "#fff" : C.slate,
+              borderRadius: 10, cursor:"pointer",
+              fontFamily:"'DM Mono',monospace", fontWeight: 700, fontSize: 15,
+              transition:"all 0.18s", boxShadow: value===n ? `0 4px 12px ${color}40` : "none",
+              transform: value===n ? "scale(1.1)" : "scale(1)",
+            }}>{n}</button>
+        ))}
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between", marginTop: 6,
+        fontFamily:"'DM Mono',monospace", fontSize: 10, color: C.muted, letterSpacing:0.5 }}>
+        <span>1 — {low}</span><span>{max} — {high}</span>
+      </div>
+    </div>
+  );
 }
 
-function renderInnovation() {
-  const hp = data.innovation.hasActiveProject || '';
-  return `
-  ${field('Do you currently have an active innovation or applied research project?','',true,radioGroup('innovation','hasActiveProject',["Yes — actively working on it","Yes — at ideation stage","Was working on one (paused)","No, but interested","No, not on my radar"]))}
-  ${hp.startsWith('Yes') ? `
-    ${field('Brief description of your innovation project','What problem does it solve? Who is the beneficiary?',false,textareaEl('innovation','projectDescription','Describe your innovation — technology, service, process, or social innovation...',3))}
-    ${field('Technology / Innovation Readiness Stage','',false,radioGroup('innovation','projectStage',["Idea / Concept (TRL 1–2)","Proof of Concept (TRL 3–4)","Prototype developed (TRL 5–6)","Pilot tested (TRL 7)","Market ready / Deployed (TRL 8–9)"]))}
-  ` : ''}
-  ${field('Have you started or co-founded a startup / spin-off?','',false,radioGroup('innovation','startupOrSpinoff',["Yes — registered company","Yes — informal venture","In process of registering","Interested but haven't started","No"]))}
-  ${field('Industry collaboration experience','',false,radioGroup('innovation','industryCollaboration',["Active industry partner currently","Had industry partnerships in the past","Consultancy work (paid)","Informal connections only","None"]))}
-  ${field('What barriers prevent you from taking research to innovation?','Select all that apply',true,checkGroup('innovation','innovationBarriers',INNOVATION_BARRIERS,2))}
-  ${field('How do you currently think about creating value from your research?','Describe your approach or aspiration in 2–3 sentences',false,textareaEl('innovation','valueCreationApproach','e.g. Licensing IP, social impact projects, spin-off, writing for public audiences...',3))}
-  ${field('Awareness of IP (Intellectual Property) processes at your institution','',false,radioGroup('innovation','ipAwareness',["Very aware — have used them","Aware but haven't used","Heard about it, unclear on process","Not aware at all"]))}`;
+function CheckGroup({ options, selected=[], onChange, cols=2, color=C.teal }) {
+  const toggle = v => {
+    const s = selected.includes(v) ? selected.filter(x=>x!==v) : [...selected,v];
+    onChange(s);
+  };
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols},1fr)`, gap:"6px 12px", margin:"8px 0" }}>
+      {options.map(opt=>(
+        <label key={opt} style={{
+          display:"flex", alignItems:"center", gap: 8, cursor:"pointer",
+          fontSize: 13, color: C.text2, padding:"8px 10px",
+          border:`1.5px solid ${selected.includes(opt) ? color : C.border}`,
+          background: selected.includes(opt) ? color+"12" : C.white,
+          borderRadius: 8, transition:"all 0.15s",
+        }}>
+          <input type="checkbox" checked={selected.includes(opt)} onChange={()=>toggle(opt)} style={{accentColor:color, width:15,height:15}} />
+          <span>{opt}</span>
+        </label>
+      ))}
+    </div>
+  );
 }
 
-function renderAitools() {
-  return `
-  ${field('Overall comfort level with AI tools for academic work','1 = Never used, 5 = Use daily across multiple tools',true,ratingScale('aitools','overallComfort','Never used','Power user'))}
-  ${field('AI tools you have used (even once)','',true,checkGroup('aitools','toolsUsed',AI_TOOLS,3))}
-  ${field('Contexts in which you have used AI tools','',false,checkGroup('aitools','usageContexts',AI_CONTEXTS,2))}
-  ${field('How do you currently use AI in your research process?','Describe specific use cases, or write "Not yet"',false,textareaEl('aitools','researchAiUse','e.g. I use ChatGPT to draft literature review summaries, Elicit for paper discovery...',2))}
-  ${field('How do you currently use AI in your teaching?','Describe specific use cases, or write "Not yet"',false,textareaEl('aitools','teachingAiUse','e.g. I use Canva AI for slide design, ChatGPT for quiz generation...',2))}
-  ${field('Concerns you have about AI in academia','',false,checkGroup('aitools','aiConcerns',AI_CONCERNS,2))}
-  ${field('How much opportunity do you see in AI for your research domain?','1 = Very little, 5 = Transformative potential',false,ratingScale('aitools','aiOpportunityRating','Little potential','Transformative',5,'#1a6b4a'))}
-  ${field('Which AI tools or capabilities would you most like to learn?','',false,textareaEl('aitools','aiToolsWantToLearn','e.g. AI for systematic reviews, AI image tools, AI coding assistants...',2))}`;
+function RadioGroup({ options, value, onChange, color=C.teal }) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap: 6, margin:"8px 0" }}>
+      {options.map(opt=>(
+        <label key={opt} style={{
+          display:"flex", alignItems:"center", gap: 10, cursor:"pointer",
+          fontSize: 13, color: C.text2, padding:"9px 12px",
+          border:`1.5px solid ${value===opt ? color : C.border}`,
+          background: value===opt ? color+"10" : C.white,
+          borderRadius: 8, transition:"all 0.15s",
+        }}>
+          <input type="radio" checked={value===opt} onChange={()=>onChange(opt)} style={{accentColor:color}} />
+          <span>{opt}</span>
+        </label>
+      ))}
+    </div>
+  );
 }
 
-function renderIntegration() {
-  return `
-  ${field('Current level of teaching-research integration','1 = Fully separate, 5 = Fully integrated — I teach what I research',false,ratingScale('integration','currentIntegrationLevel','Fully separate','Fully integrated',5,'#7a3b6a'))}
-  ${field('How do you currently integrate research into teaching?','',false,checkGroup('integration','integrationMethods',INTEGRATION_METHODS,1))}
-  ${field('What is the single biggest challenge you face in integrating teaching with research?','This is a core research question — please be specific',true,textareaEl('integration','mainChallenge','e.g. Time pressure, separate appraisal systems, lack of student readiness, curriculum rigidity...',3))}
-  ${field('Familiarity with "First Principles Thinking" as a problem-solving approach','',false,radioGroup('integration','firstPrinciplesAwareness',["Very familiar — I apply it regularly","Heard of it, have some understanding","Came across the term but unfamiliar","Not heard of it before"]))}
-  ${field('Experience with transdisciplinary or interdisciplinary research/teaching','',false,radioGroup('integration','transdisciplinaryExp',["Active transdisciplinary projects","Some cross-disciplinary exposure","Interested but haven't done it yet","Works within own discipline only"]))}
-  ${field('Do you involve students in your research?','',false,radioGroup('integration','studentResearchInvolvement',["Yes — UG students","Yes — PG students","Yes — PhD students","Multiple levels","No, but interested","No"]))}
-  ${field('Your "deep reading" habit','Deep reading = slow, analytical, annotated engagement with academic texts',false,radioGroup('integration','deepReadingHabit',["Daily — it's a deliberate practice","Weekly","Occasionally when preparing courses","Rarely — mostly skim articles","Don't have a structured reading practice"]))}
-  ${field('Do you currently curate or create knowledge content for public audiences?','e.g. blog, YouTube, podcast, LinkedIn articles, book, popular science writing',false,radioGroup('integration','knowledgeCurationPractice',["Yes — actively and regularly","Yes — occasionally","Have done it once or twice","Interested but haven't started","No"]))}
-  ${field('What do you most hope to gain from this FDP session today?','',true,textareaEl('integration','fdpExpectation','Be specific — what shift in thinking, skill, or connection would make today worthwhile for you?',3))}`;
+function Field({ label, hint, required, children, color=C.teal }) {
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <div style={{ fontFamily:"'Lora',Georgia,serif", fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 3 }}>
+        {label} {required && <span style={{color:C.coral,fontSize:11}}>*</span>}
+      </div>
+      {hint && <div style={{ fontFamily:"'DM Mono',monospace", fontSize: 10.5, color: C.muted, marginBottom: 7, letterSpacing:0.5, lineHeight:1.5 }}>{hint}</div>}
+      {children}
+    </div>
+  );
 }
 
-function renderAspirations() {
-  return `
-  ${field('Your single most important research or innovation goal in the next 12 months','One concrete, actionable goal — not a general aspiration',true,textareaEl('aspirations','oneYearGoal','e.g. Submit a paper to a Q1 journal by December, file a provisional patent...',2))}
-  ${field('If you could turn one piece of your research into an innovative product or service — what would it be?','Blue-sky thinking — no constraints. This seed idea feeds Activity E of the FDP session.',false,textareaEl('aspirations','innovationIdea','Describe the product/service, the problem it solves, and who benefits...',3))}
-  ${field('Are you open to research or innovation collaboration with other FDP participants?','Your response helps us build collaboration clusters from today\'s 80 participants',false,radioGroup('aspirations','collaborationInterest',["Yes — actively looking for collaborators","Yes — open if the right match emerges","Maybe — depends on the topic","Prefer solo work for now"]))}
-  ${field('One concrete action you commit to taking in the next 7 days','This becomes your public commitment — displayed (anonymously) at session close',true,textareaEl('aspirations','commitmentAction','e.g. I will create one infographic of my research and post it on LinkedIn...',2))}
-  ${field('Any other thoughts, suggestions, or context you\'d like to share with the research team?','',false,textareaEl('aspirations','additionalThoughts','Open space — share anything not captured above...',3))}
-  <div class="ethics-box">
-    <div class="ethics-label">DATA ETHICS NOTE</div>
-    <p style="font-size:12px;color:#2a3a2a;line-height:1.6">All responses are securely stored and will be anonymised before analysis. Aggregate findings will be shared with all participants. Individual responses will never be disclosed without explicit consent.</p>
-  </div>`;
+function Input({ value, onChange, placeholder, type="text" }) {
+  return (
+    <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+      style={{ width:"100%", padding:"10px 14px", border:`1.5px solid ${C.border}`,
+      borderRadius:8, fontFamily:"'Lora',Georgia,serif", fontSize:13, color:C.text,
+      background:C.white, outline:"none", boxSizing:"border-box",
+      transition:"border-color 0.2s" }}
+      onFocus={e=>e.target.style.borderColor=C.teal}
+      onBlur={e=>e.target.style.borderColor=C.border}
+    />
+  );
 }
 
-const RENDERERS = [renderConsent, renderResearch, renderPublication, renderInnovation, renderAitools, renderIntegration, renderAspirations];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// NAVIGATION
-// ─────────────────────────────────────────────────────────────────────────────
-function renderNav() {
-  const nav = document.getElementById('section-nav');
-  nav.innerHTML = SECTIONS.map((s,i) => {
-    let cls = '';
-    if(i === currentSection) cls = 'active';
-    else if(i < currentSection) cls = 'done';
-    return `<button class="snav-btn ${cls}" onclick="if(${i}<=${currentSection})goTo(${i})">${s.icon} ${s.label}</button>`;
-  }).join('');
-
-  document.getElementById('section-label').textContent = `Section ${currentSection+1} of ${SECTIONS.length} · ${SECTIONS[currentSection].label}`;
-  document.getElementById('section-title').textContent = SECTIONS[currentSection].label;
-  document.getElementById('nav-count').textContent = `${currentSection+1} / ${SECTIONS.length}`;
-  document.getElementById('progress-fill').style.width = `${Math.round((currentSection/SECTIONS.length)*100)}%`;
-
-  document.getElementById('btn-prev').disabled = currentSection === 0;
-  const isLast = currentSection === SECTIONS.length - 1;
-  document.getElementById('btn-next').style.display = isLast ? 'none' : '';
-  document.getElementById('btn-submit').style.display = isLast ? '' : 'none';
+function Textarea({ value, onChange, placeholder, rows=3 }) {
+  return (
+    <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows}
+      style={{ width:"100%", padding:"10px 14px", border:`1.5px solid ${C.border}`,
+      borderRadius:8, fontFamily:"'Lora',Georgia,serif", fontSize:13, color:C.text,
+      background:C.white, outline:"none", resize:"vertical", boxSizing:"border-box",
+      transition:"border-color 0.2s" }}
+      onFocus={e=>e.target.style.borderColor=C.teal}
+      onBlur={e=>e.target.style.borderColor=C.border}
+    />
+  );
 }
 
-function renderBody() {
-  // sync anonymous_str to consent.anonymous before render
-  if(data.consent.anonymous_str === undefined) data.consent.anonymous_str = 'Keep my responses fully anonymous';
-  document.getElementById('section-body').innerHTML = RENDERERS[currentSection]();
+function Select({ value, onChange, options, placeholder }) {
+  return (
+    <select value={value} onChange={e=>onChange(e.target.value)}
+      style={{ width:"100%", padding:"10px 14px", border:`1.5px solid ${C.border}`,
+      borderRadius:8, fontFamily:"'Lora',Georgia,serif", fontSize:13,
+      color: value ? C.text : C.muted, background:C.white, outline:"none" }}>
+      <option value="">{placeholder||"Select..."}</option>
+      {options.map(o=><option key={o} value={o}>{o}</option>)}
+    </select>
+  );
 }
 
-function goTo(i) {
-  currentSection = i;
-  renderNav();
-  renderBody();
-  window.scrollTo({top:0, behavior:'smooth'});
+function PathwayCard({ title, icon, desc, color, selected, onClick }) {
+  return (
+    <div onClick={onClick} style={{
+      border:`2px solid ${selected ? color : C.border}`,
+      background: selected ? color+"10" : C.white,
+      borderRadius:12, padding:"16px 14px", cursor:"pointer",
+      transition:"all 0.2s",
+      boxShadow: selected ? `0 4px 16px ${color}30` : "0 1px 4px rgba(0,0,0,0.05)",
+      transform: selected ? "translateY(-2px)" : "none",
+    }}>
+      <div style={{ fontSize:26, marginBottom:8 }}>{icon}</div>
+      <div style={{ fontFamily:"'Lora',Georgia,serif", fontWeight:700, fontSize:13, color: selected?color:C.text, marginBottom:5 }}>{title}</div>
+      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:C.muted, lineHeight:1.5 }}>{desc}</div>
+    </div>
+  );
 }
 
-function nextSection() {
-  if(currentSection < SECTIONS.length - 1) goTo(currentSection + 1);
+function ProgressBar({ current, total }) {
+  const pct = Math.round(((current+1)/total)*100);
+  const color = SECTIONS[current]?.color || C.teal;
+  return (
+    <div style={{ position:"relative" }}>
+      <div style={{ height:4, background:"#E2E8F0", borderRadius:2 }}>
+        <div style={{
+          height:"100%", borderRadius:2, width:`${pct}%`,
+          background:`linear-gradient(90deg, ${C.teal}, ${color})`,
+          transition:"width 0.4s ease",
+        }} />
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between", marginTop:4,
+        fontFamily:"'DM Mono',monospace", fontSize:9, color:C.muted, letterSpacing:0.5 }}>
+        <span>Section {current+1} of {total}</span>
+        <span>{pct}% complete</span>
+      </div>
+    </div>
+  );
 }
 
-function prevSection() {
-  if(currentSection > 0) goTo(currentSection - 1);
-}
+const init = {
+  consent:{agreed:"",anonymous:true},
+  identity:{name:"",institution:"",department:"",designation:"",yearsExp:"",email:"",orcid:""},
+  research:{domain:"",subDomain:"",keywords:"",approaches:[],paradigm:"",focus:"",collabTypes:[],funding:""},
+  publication:{total:"",indexed:"",hIndex:"",citations:"",journalTypes:[],lastYear:"",conferences:"",patents:"",openAccess:"",biggestChallenge:""},
+  innovation:{hasProject:"",projectDesc:"",stage:"",startup:"",industry:"",barriers:[],valueApproach:"",ipAwareness:""},
+  aitools:{overallComfort:0,toolsUsed:[],usageContexts:[],researchUse:"",teachingUse:"",concerns:[],opportunityRating:0,wantToLearn:""},
+  aipublication:{
+    aiWritingComfort:0, aiLitReviewUse:"", aiJournalMatch:"", aiEthicsStance:"",
+    aiCoAuthorView:"", aiResearchGaps:"", aiDataAnalysis:"", globalCollabInterest:"",
+    openAccessAwareness:"", preregistrationAwareness:"", altmetricsAwareness:"",
+    aiPublicationBarriers:[], aiPublicationOpportunities:[],
+    publishingAmbition:"", scopusWosTarget:"",
+  },
+  integration:{
+    integrationLevel:0, integrationMethods:[], mainChallenge:"",
+    notionalHoursAwareness:"", notionalHoursUse:"",
+    experientialLearningMethods:[], experientialLearningRating:0,
+    learningOutcomesApproach:"",
+    researchAsLearningView:"", studentResearchInvolvement:"",
+    assessmentResearchLink:"", deepReadingHabit:"", knowledgeCuration:"",
+    fdpExpectation:"",
+  },
+  boundaries:{
+    beyondClassroomActivities:[], studentInnovationSupport:"",
+    startupEcosystemRole:"", incubatorLink:"",
+    industryExposureActivities:[], studentEntrepreneurship:"",
+    solutionProviderApproach:"", communityEngagement:"",
+    fdpInterestedInJoining:"", fdpTopicsInterested:[],
+    policyEngagement:"", sdgAlignment:[],
+  },
+  career:{
+    currentRole:"", primaryIdentity:[],
+    futurePathway:"", timelineAspiration:"",
+    administratorInterest:"", teacherDeveloperInterest:"",
+    researcherGoals:"", entrepreneurInterest:"",
+    skillGaps:[], upskillPriorities:[],
+    mentoringRole:"", leadershipAspiration:"",
+    internationalAspiration:"", collaborationNeeds:"",
+    careerObstacles:[], supportNeeded:[],
+    fiveYearVision:"",
+  },
+  aspirations:{oneYearGoal:"",innovationIdea:"",collaborationInterest:"",commitmentAction:"",additionalThoughts:""},
+};
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUBMIT
-// ─────────────────────────────────────────────────────────────────────────────
-async function submitSurvey() {
-  // Map anonymous_str back
-  data.consent.anonymous = data.consent.anonymous_str === 'Keep my responses fully anonymous';
+function FDPForm() {
+  const [section, setSection] = useState(0);
+  const [data, setData] = useState(init);
+  const [submitted, setSubmitted] = useState(false);
 
-  if(!data.consent.agreed || data.consent.agreed === 'No, I prefer not to participate') {
-    alert('Please consent to participate before submitting.');
-    goTo(0); return;
-  }
-  if(!data.identity.institution || !data.identity.department) {
-    alert('Institution and Department are required fields.');
-    goTo(0); return;
-  }
+  const upd = (block, field, val) => setData(d=>({...d,[block]:{...d[block],[field]:val}}));
+  const sid = SECTIONS[section].id;
+  const col = SECTIONS[section].color;
 
-  try {
-    const res = await fetch('/api/submit', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-    const json = await res.json();
-    if(json.ok) {
-      document.getElementById('survey-app').style.display = 'none';
-      document.getElementById('thankyou').style.display = 'flex';
-      document.getElementById('commitment-display').textContent =
-        data.aspirations.commitmentAction || 'Check your email for next steps.';
-    } else {
-      alert('Submission error: ' + (json.error || 'Unknown error'));
+  const handleSubmit = async () => {
+    // validation
+    if (!data.consent.agreed || data.consent.agreed.startsWith("No")) {
+      alert("Please consent to participate before submitting.");
+      setSection(0); return;
     }
-  } catch(e) {
-    alert('Network error. Please try again.');
-  }
+    if (!data.identity.institution || !data.identity.department) {
+      alert("Institution and Department are required fields.");
+      setSection(0); return;
+    }
+    
+    try {
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      if(json.ok) {
+        setSubmitted(true);
+      } else {
+        alert('Submission error: ' + (json.error || 'Unknown error'));
+      }
+    } catch(e) {
+      alert('Network error. Please try again.');
+    }
+  };
+
+  const renderSection = () => {
+    if (sid==="consent") return (<>
+      <SegmentHeader icon="◈" label="Informed Consent & Participant Identity" color={C.teal}
+        subtitle="Your participation is voluntary. All data is anonymised and used solely for FDP research and publication."
+        visual={
+          <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+            {["Voluntary participation","Anonymised data","Academic use only","Publishable research"].map(t=>(
+              <span key={t} style={{background:C.tealLt,color:C.teal,fontSize:10,padding:"4px 10px",borderRadius:20,fontFamily:"'DM Mono',monospace",fontWeight:600}}>✓ {t}</span>
+            ))}
+          </div>
+        }
+      />
+      <Field label="Consent to participate" required color={C.teal}>
+        <RadioGroup color={C.teal}
+          options={["Yes, I consent to participate and understand my data will be anonymised","No, I prefer not to participate"]}
+          value={data.consent.agreed} onChange={v=>upd("consent","agreed",v)}/>
+      </Field>
+      <Divider color={C.teal} label="Participant Identity" />
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 18px"}}>
+        <Field label="Full Name" hint="Optional if anonymous" color={C.teal}><Input value={data.identity.name} onChange={v=>upd("identity","name",v)} placeholder="Dr. / Prof. ..."/></Field>
+        <Field label="Email Address" color={C.teal}><Input type="email" value={data.identity.email} onChange={v=>upd("identity","email",v)} placeholder="you@institution.edu"/></Field>
+        <Field label="Institution / University" required color={C.teal}><Input value={data.identity.institution} onChange={v=>upd("identity","institution",v)} placeholder="Name of institution"/></Field>
+        <Field label="Department / School" required color={C.teal}><Input value={data.identity.department} onChange={v=>upd("identity","department",v)} placeholder="Dept. of ..."/></Field>
+        <Field label="Designation" required color={C.teal}>
+          <Select value={data.identity.designation} onChange={v=>upd("identity","designation",v)}
+            options={["Assistant Professor","Associate Professor","Professor","Professor & HOD","Dean / Director","Research Scientist","Post-Doctoral Fellow","Other"]}/>
+        </Field>
+        <Field label="Years of Academic Experience" required color={C.teal}>
+          <Select value={data.identity.yearsExp} onChange={v=>upd("identity","yearsExp",v)}
+            options={["0–2 years","3–5 years","6–10 years","11–20 years","21–30 years","30+ years"]}/>
+        </Field>
+      </div>
+      <Field label="ORCID ID" hint="e.g. 0000-0001-2345-6789 — helps track research contributions" color={C.teal}>
+        <Input value={data.identity.orcid} onChange={v=>upd("identity","orcid",v)} placeholder="0000-0000-0000-0000"/>
+      </Field>
+    </>);
+
+    if (sid==="research") return (<>
+      <SegmentHeader icon="◉" label="Research Profile" color={C.violet}
+        subtitle="Tell us about your research domain, focus, and current questions. Your keywords enable cross-participant network mapping."
+        visual={
+          <div style={{display:"flex",gap:16}}>
+            {[{n:"Keywords",icon:"🔑"},{n:"Domain",icon:"🎯"},{n:"Approach",icon:"🔬"},{n:"Collaboration",icon:"🤝"}].map(t=>(
+              <div key={t.n} style={{textAlign:"center",flex:1}}>
+                <div style={{fontSize:20,marginBottom:4}}>{t.icon}</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.violet,letterSpacing:1}}>{t.n}</div>
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <Field label="Primary Research Domain" required color={C.violet}><Input value={data.research.domain} onChange={v=>upd("research","domain",v)} placeholder="e.g. Biochemistry, Mechanical Engineering, Education..."/></Field>
+      <Field label="Sub-Domain / Specialisation" hint="Be specific — helps identify transdisciplinary connections across 80 participants" color={C.violet}><Input value={data.research.subDomain} onChange={v=>upd("research","subDomain",v)} placeholder="e.g. Additive Manufacturing, Epigenetics, EdTech..."/></Field>
+      <Field label="Top 5 Research Keywords" hint="Comma-separated — used for network mapping" required color={C.violet}><Input value={data.research.keywords} onChange={v=>upd("research","keywords",v)} placeholder="keyword1, keyword2, keyword3..."/></Field>
+      <Field label="Research Approach(es)" required color={C.violet}>
+        <CheckGroup color={C.violet} options={["Quantitative","Qualitative","Mixed Methods","Experimental","Theoretical","Computational","Design-based","Action Research"]} selected={data.research.approaches} onChange={v=>upd("research","approaches",v)}/>
+      </Field>
+      <Field label="Research Paradigm" color={C.violet}>
+        <RadioGroup color={C.violet} options={["Positivist","Interpretivist","Critical","Pragmatist","Constructivist","Post-positivist"]} value={data.research.paradigm} onChange={v=>upd("research","paradigm",v)}/>
+      </Field>
+      <Field label="Current Research Focus" hint="What problem are you working on right now? 2–3 sentences." required color={C.violet}>
+        <Textarea value={data.research.focus} onChange={v=>upd("research","focus",v)} rows={3} placeholder="Describe the core problem your research addresses..."/>
+      </Field>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 18px"}}>
+        <Field label="Collaboration Pattern(s)" color={C.violet}>
+          <CheckGroup color={C.violet} cols={1} options={["Solo research","Within institution","Inter-institutional","International","Industry-academia","Citizen science"]} selected={data.research.collabTypes} onChange={v=>upd("research","collabTypes",v)}/>
+        </Field>
+        <Field label="Funding Status" color={C.violet}>
+          <RadioGroup color={C.violet} options={["Unfunded (self-driven)","Internal seed grant","DST / SERB / CSIR external","Industry-funded","International grant","Seeking funding"]} value={data.research.funding} onChange={v=>upd("research","funding",v)}/>
+        </Field>
+      </div>
+    </>);
+
+    if (sid==="publication") return (<>
+      <SegmentHeader icon="◎" label="Publication History" color={C.amber}
+        subtitle="Your publication profile helps us understand where faculty are on the research output journey and identify systemic barriers."
+        visual={
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+            {[{label:"Papers",icon:"📄"},{label:"Citations",icon:"🔗"},{label:"h-index",icon:"📈"},{label:"Patents",icon:"💡"}].map(m=>(
+              <div key={m.label} style={{background:C.amberLt,borderRadius:8,padding:"8px",textAlign:"center"}}>
+                <div style={{fontSize:16}}>{m.icon}</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.amber,letterSpacing:1,marginTop:3}}>{m.label}</div>
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 18px"}}>
+        <Field label="Total peer-reviewed publications" required color={C.amber}>
+          <Select value={data.publication.total} onChange={v=>upd("publication","total",v)} options={["0","1–5","6–10","11–20","21–40","41–60","60+"]}/>
+        </Field>
+        <Field label="Scopus / WoS indexed papers" color={C.amber}>
+          <Select value={data.publication.indexed} onChange={v=>upd("publication","indexed",v)} options={["0","1–5","6–10","11–20","21–40","40+"]}/>
+        </Field>
+        <Field label="h-index (approximate)" color={C.amber}>
+          <Select value={data.publication.hIndex} onChange={v=>upd("publication","hIndex",v)} options={["0","1–3","4–6","7–10","11–15","16–20","21+"]}/>
+        </Field>
+        <Field label="Total citations (approximate)" color={C.amber}>
+          <Select value={data.publication.citations} onChange={v=>upd("publication","citations",v)} options={["0","1–50","51–200","201–500","501–1000","1000–5000","5000+"]}/>
+        </Field>
+        <Field label="Year of most recent publication" color={C.amber}>
+          <Select value={data.publication.lastYear} onChange={v=>upd("publication","lastYear",v)} options={["2025","2024","2023","2022","2021","Before 2020","Not published yet"]}/>
+        </Field>
+        <Field label="Patents filed or granted" color={C.amber}>
+          <Select value={data.publication.patents} onChange={v=>upd("publication","patents",v)} options={["0","1 filed","2–3 filed","1 granted","2–5 granted","5+ granted"]}/>
+        </Field>
+      </div>
+      <Field label="Types of publication venues" color={C.amber}>
+        <CheckGroup color={C.amber} options={["Scopus indexed","Web of Science","UGC-CARE","High IF (>3)","Open access","Conference proceedings","Book chapters"]} selected={data.publication.journalTypes} onChange={v=>upd("publication","journalTypes",v)}/>
+      </Field>
+      <Field label="Biggest challenge in publishing" required hint="Be candid — feeds directly into curriculum design" color={C.amber}>
+        <Textarea value={data.publication.biggestChallenge} onChange={v=>upd("publication","biggestChallenge",v)} rows={3} placeholder="e.g. Time constraints, writing quality, finding journals, collaborator gaps..."/>
+      </Field>
+    </>);
+
+    if (sid==="innovation") return (<>
+      <SegmentHeader icon="◐" label="Innovation Projects" color={C.coral}
+        subtitle="Bridging research to innovation is a core FDP theme. Tell us where you are on the Research → Innovation → Entrepreneurship journey."/>
+      <Field label="Active innovation or applied research project?" required color={C.coral}>
+        <RadioGroup color={C.coral} options={["Yes — actively working on it","Yes — at ideation stage","Was working on one (paused)","No, but interested","No, not on my radar"]} value={data.innovation.hasProject} onChange={v=>upd("innovation","hasProject",v)}/>
+      </Field>
+      {(data.innovation.hasProject||"").startsWith("Yes")&&(<>
+        <Field label="Brief project description" hint="Problem, solution, beneficiary" color={C.coral}>
+          <Textarea value={data.innovation.projectDesc} onChange={v=>upd("innovation","projectDesc",v)} rows={3} placeholder="Describe your innovation..."/>
+        </Field>
+        <Field label="Technology / Innovation Readiness Level" color={C.coral}>
+          <RadioGroup color={C.coral} options={["TRL 1–2: Idea/Concept","TRL 3–4: Proof of Concept","TRL 5–6: Prototype","TRL 7: Pilot tested","TRL 8–9: Market ready"]} value={data.innovation.stage} onChange={v=>upd("innovation","stage",v)}/>
+        </Field>
+      </>)}
+      <Field label="Barriers to taking research to innovation" required color={C.coral}>
+        <CheckGroup color={C.coral} options={["Lack of time","No funding","Institutional support","IP/TRL awareness","Industry connect","Entrepreneurial mindset","Regulatory hurdles","Team gaps"]} selected={data.innovation.barriers} onChange={v=>upd("innovation","barriers",v)}/>
+      </Field>
+      <Field label="Industry collaboration experience" color={C.coral}>
+        <RadioGroup color={C.coral} options={["Active industry partner","Past partnerships","Consultancy work","Informal connections only","None"]} value={data.innovation.industry} onChange={v=>upd("innovation","industry",v)}/>
+      </Field>
+      <Field label="IP awareness at your institution" color={C.coral}>
+        <RadioGroup color={C.coral} options={["Very aware — have used IP processes","Aware but haven't used","Heard of it, unclear on process","Not aware at all"]} value={data.innovation.ipAwareness} onChange={v=>upd("innovation","ipAwareness",v)}/>
+      </Field>
+    </>);
+
+    if (sid==="aitools") return (<>
+      <SegmentHeader icon="◑" label="AI Tools & Research Practice" color={C.teal}
+        subtitle="Understanding how faculty currently engage with AI tools helps us identify the training gap and design targeted capacity building."
+        visual={
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {["ChatGPT","Claude","Gemini","Perplexity","Elicit","Consensus","NotebookLM","Canva AI"].map(t=>(
+              <span key={t} style={{background:C.ink3,color:C.teal,fontSize:9,padding:"3px 9px",borderRadius:4,fontFamily:"'DM Mono',monospace"}}>{t}</span>
+            ))}
+            <span style={{color:C.muted,fontSize:9,padding:"3px 9px",fontFamily:"'DM Mono',monospace",fontStyle:"italic"}}>+ many more →</span>
+          </div>
+        }
+      />
+      <Field label="Overall comfort with AI tools for academic work" required hint="1 = Never used · 5 = Daily power user across multiple tools" color={C.teal}>
+        <ScaleVisual value={data.aitools.overallComfort} onChange={v=>upd("aitools","overallComfort",v)} low="Never used" high="Expert" color={C.teal}/>
+      </Field>
+      <Field label="AI tools you have used (even once)" required color={C.teal}>
+        <CheckGroup color={C.teal} cols={3} options={["ChatGPT","Claude","Gemini","Copilot","Perplexity","Elicit","ResearchRabbit","Scite.ai","Consensus","Canva AI","Napkin.ai","Gamma","Grammarly AI","NotebookLM","None yet"]} selected={data.aitools.toolsUsed} onChange={v=>upd("aitools","toolsUsed",v)}/>
+      </Field>
+      <Field label="Contexts where you have used AI" color={C.teal}>
+        <CheckGroup color={C.teal} options={["Literature review","Writing assistance","Data analysis","Teaching materials","Presentation design","Research ideation","Grant writing","Code generation","None"]} selected={data.aitools.usageContexts} onChange={v=>upd("aitools","usageContexts",v)}/>
+      </Field>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 18px"}}>
+        <Field label="How do you use AI in research?" color={C.teal}><Textarea value={data.aitools.researchUse} onChange={v=>upd("aitools","researchUse",v)} rows={2} placeholder="Specific use cases or 'Not yet'"/></Field>
+        <Field label="How do you use AI in teaching?" color={C.teal}><Textarea value={data.aitools.teachingUse} onChange={v=>upd("aitools","teachingUse",v)} rows={2} placeholder="Specific use cases or 'Not yet'"/></Field>
+      </div>
+      <Field label="AI concerns in academia" color={C.teal}>
+        <CheckGroup color={C.teal} options={["Academic integrity","Data privacy","Over-reliance","Job displacement","Misinformation","Bias in outputs","No concerns"]} selected={data.aitools.concerns} onChange={v=>upd("aitools","concerns",v)}/>
+      </Field>
+      <Field label="AI opportunity for your research domain" hint="1 = Little potential · 5 = Transformative" color={C.teal}>
+        <ScaleVisual value={data.aitools.opportunityRating} onChange={v=>upd("aitools","opportunityRating",v)} low="Little potential" high="Transformative" color={C.emerald}/>
+      </Field>
+    </>);
+
+    if (sid==="aipublication") return (<>
+      <SegmentHeader icon="◆" label="AI as a Global Publication Enabler" color={C.emerald}
+        subtitle="This section explores how AI can transform your research from local contribution to globally visible, indexed, and cited scholarship."
+        visual={
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+            {[
+              {icon:"🌍",label:"Global Visibility",desc:"Scopus · WoS · Altmetrics"},
+              {icon:"🤖",label:"AI-Assisted Writing",desc:"Grammar · Clarity · Structure"},
+              {icon:"🔍",label:"Research Discovery",desc:"Gap finding · Trend mapping"},
+            ].map(c=>(
+              <div key={c.label} style={{background:C.emeraldLt,borderRadius:10,padding:"12px",textAlign:"center"}}>
+                <div style={{fontSize:22,marginBottom:5}}>{c.icon}</div>
+                <div style={{fontFamily:"'Lora',Georgia,serif",fontWeight:700,fontSize:12,color:C.emerald,marginBottom:2}}>{c.label}</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted}}>{c.desc}</div>
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <Divider color={C.emerald} label="AI-Assisted Writing & Quality" />
+      <Field label="Comfort using AI to enhance research writing quality" hint="Grammar, clarity, logical structure, academic tone" color={C.emerald}>
+        <ScaleVisual value={data.aipublication.aiWritingComfort} onChange={v=>upd("aipublication","aiWritingComfort",v)} low="Never tried" high="Use regularly" color={C.emerald}/>
+      </Field>
+      <Field label="Have you used AI for literature review or gap analysis?" color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["Yes — regularly (e.g. Elicit, ResearchRabbit, Consensus)","Yes — once or twice","No, but I know how","No, unaware of these tools","Would like to learn"]} value={data.aipublication.aiLitReviewUse} onChange={v=>upd("aipublication","aiLitReviewUse",v)}/>
+      </Field>
+      <Field label="Have you used AI for journal/conference matching?" hint="Tools like Elsevier Journal Finder, Springer Journal Suggester, AI-powered submission tools" color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["Yes — I use them before submission","Aware but haven't used","Not aware of these tools","I rely on manual search only"]} value={data.aipublication.aiJournalMatch} onChange={v=>upd("aipublication","aiJournalMatch",v)}/>
+      </Field>
+      <Field label="Have you used AI tools for statistical analysis or data visualisation?" hint="e.g. Julius AI, Code Interpreter, SPSS AI, R with LLM assistance" color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["Yes — actively","Tried once or twice","Aware but not used","Not aware","Interested in learning"]} value={data.aipublication.aiDataAnalysis} onChange={v=>upd("aipublication","aiDataAnalysis",v)}/>
+      </Field>
+
+      <Divider color={C.emerald} label="Ethics, Integrity & AI Co-authorship" />
+      <Field label="Your position on AI as a co-author or contributor to publications" required color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["AI should never be credited — it is a tool only","AI assistance should be disclosed in the methodology","AI could be acknowledged in footnotes","I am unclear on the ethical position","I follow my institution's current policy"]} value={data.aipublication.aiCoAuthorView} onChange={v=>upd("aipublication","aiCoAuthorView",v)}/>
+      </Field>
+      <Field label="Stance on academic integrity when using AI in research writing" color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["Full transparency — always disclose AI use","Disclose only when substantial AI writing is involved","Use AI only for editing/grammar — no disclosure needed","Institutional policy unclear — I am cautious","I need guidance on this"]} value={data.aipublication.aiEthicsStance} onChange={v=>upd("aipublication","aiEthicsStance",v)}/>
+      </Field>
+
+      <Divider color={C.emerald} label="Global Research Visibility & Open Science" />
+      <Field label="Awareness of open access publishing and its impact on citation counts" color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["Very aware — I actively publish open access","Aware — cost is a barrier","Aware — my institution doesn't support APCs","Heard of it but unclear on benefits","Not aware"]} value={data.aipublication.openAccessAwareness} onChange={v=>upd("aipublication","openAccessAwareness",v)}/>
+      </Field>
+      <Field label="Awareness and use of pre-registration for research studies" hint="Pre-registering methodology before data collection — standard in high-impact journals" color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["Use pre-registration regularly","Aware, used once","Aware but never used","Not aware of pre-registration","Interested in learning more"]} value={data.aipublication.preregistrationAwareness} onChange={v=>upd("aipublication","preregistrationAwareness",v)}/>
+      </Field>
+      <Field label="Awareness of altmetrics and research impact beyond citations" hint="Social media reach, policy citations, media mentions, downloads" color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["Very aware — I track my altmetric score","Heard of it, unclear on how to use","Not aware","I focus only on citation counts","Would like to build visibility beyond citations"]} value={data.aipublication.altmetricsAwareness} onChange={v=>upd("aipublication","altmetricsAwareness",v)}/>
+      </Field>
+
+      <Divider color={C.emerald} label="Global Collaboration & Ambition" />
+      <Field label="Interest in international research collaboration supported by AI networking tools" color={C.emerald}>
+        <RadioGroup color={C.emerald} options={["Yes — already have international collaborators","Yes — actively seeking","Open to it if the right match arises","Not a priority currently","Unsure how to initiate"]} value={data.aipublication.globalCollabInterest} onChange={v=>upd("aipublication","globalCollabInterest",v)}/>
+      </Field>
+      <Field label="Barriers to publishing in high-impact global journals" color={C.emerald}>
+        <CheckGroup color={C.emerald} options={["Language/writing quality","Lack of international collaborators","No access to premium journals","High APC costs","Lack of time for revision cycles","Unfamiliarity with global norms","Reviewer bias","No significant barriers"]} selected={data.aipublication.aiPublicationBarriers} onChange={v=>upd("aipublication","aiPublicationBarriers",v)}/>
+      </Field>
+      <Field label="Where would you most like AI to help your publication journey?" color={C.emerald}>
+        <CheckGroup color={C.emerald} options={["Identifying research gaps","Structuring manuscripts","Improving writing quality","Selecting target journals","Responding to reviewers","Grant writing","Research data analysis","Visualising findings"]} selected={data.aipublication.aiPublicationOpportunities} onChange={v=>upd("aipublication","aiPublicationOpportunities",v)}/>
+      </Field>
+      <Field label="Your 3-year publication ambition" required color={C.emerald}>
+        <Textarea value={data.aipublication.publishingAmbition} onChange={v=>upd("aipublication","publishingAmbition",v)} rows={2} placeholder="e.g. Publish 3 Q1 papers, one review article in a high-IF journal, first international collaboration..."/>
+      </Field>
+    </>);
+
+    if (sid==="integration") return (<>
+      <SegmentHeader icon="◒" label="Learning–Research Integration" color={C.violet}
+        subtitle="Research as a learning experience — where students don't just study research, they do research. This section explores your pedagogical philosophy and practice."
+        visual={
+          <div style={{display:"flex",gap:0,overflow:"hidden",borderRadius:8}}>
+            {["Surface Learning","Deep Learning","Research Learning","Innovation Learning"].map((l,i)=>{
+              const cols=[C.muted,C.violet+"99",C.violet,C.amber];
+              return(
+                <div key={l} style={{flex:1,background:cols[i],padding:"8px 6px",textAlign:"center"}}>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:"#fff",lineHeight:1.3}}>{l}</div>
+                </div>
+              );
+            })}
+          </div>
+        }
+      />
+      <Divider color={C.violet} label="Teaching-Research Integration Level" />
+      <Field label="Current level of teaching–research integration in your practice" hint="1 = Completely separate · 5 = Fully integrated — I teach what I research" color={C.violet}>
+        <ScaleVisual value={data.integration.integrationLevel} onChange={v=>upd("integration","integrationLevel",v)} low="Fully separate" high="Fully integrated" color={C.violet}/>
+      </Field>
+      <Field label="How do you currently integrate research into teaching?" color={C.violet}>
+        <CheckGroup color={C.violet} options={["Assign research papers to students","Student research projects","Cite own research in lectures","Problem-based learning from research","Live lab demonstrations","Research-informed curriculum design","Co-authoring with students","None currently"]} selected={data.integration.integrationMethods} onChange={v=>upd("integration","integrationMethods",v)}/>
+      </Field>
+      <Divider color={C.violet} label="Notional Learning Hours" />
+      <div style={{background:C.violetLt,borderRadius:10,padding:"14px 16px",marginBottom:18}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.violet,fontWeight:700,marginBottom:6}}>WHAT ARE NOTIONAL LEARNING HOURS?</div>
+        <div style={{fontFamily:"'Lora',Georgia,serif",fontSize:13,color:C.text2,lineHeight:1.6}}>
+          Notional learning hours represent the total time a student is expected to spend on learning — including contact hours, self-study, assignments, practicals, and research. They form the basis of credit frameworks (NBA, NEP 2020) and help align learning with research outcomes.
+        </div>
+      </div>
+      <Field label="Awareness of notional learning hours framework in curriculum design" color={C.violet}>
+        <RadioGroup color={C.violet} options={["Very aware — I design curricula around notional hours","Aware — I apply it occasionally","I have heard of it but don't apply it","Not aware of the concept","My institution uses it but I don't engage with it"]} value={data.integration.notionalHoursAwareness} onChange={v=>upd("integration","notionalHoursAwareness",v)}/>
+      </Field>
+      <Field label="How do you currently use notional hours to embed research into learning?" color={C.violet}>
+        <RadioGroup color={C.violet} options={["I allocate notional hours for student research components","I embed self-directed inquiry within notional hour budgets","I link research project hours to credit allocation","I haven't used notional hours for research embedding","I would like to learn how"]} value={data.integration.notionalHoursUse} onChange={v=>upd("integration","notionalHoursUse",v)}/>
+      </Field>
+      <Divider color={C.violet} label="Experiential Learning Methods" />
+      <div style={{background:C.violetLt,borderRadius:10,padding:"14px 16px",marginBottom:18}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.violet,fontWeight:700,marginBottom:8}}>EXPERIENTIAL LEARNING SPECTRUM</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+          {[{method:"Problem-Based Learning",icon:"🔧"},{method:"Project-Based Learning",icon:"📁"},{method:"Case-Based Learning",icon:"📋"},{method:"Design Thinking",icon:"💡"},{method:"Flipped Classroom",icon:"🔄"},{method:"Simulation & Role-Play",icon:"🎭"},{method:"Community Engagement",icon:"🌱"},{method:"Research Apprenticeship",icon:"🔬"}].map(m=>(
+            <div key={m.method} style={{background:C.white,borderRadius:8,padding:"8px",textAlign:"center",border:`1px solid ${C.violet}30`}}>
+              <div style={{fontSize:16,marginBottom:3}}>{m.icon}</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:C.violet,lineHeight:1.3}}>{m.method}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <Field label="Experiential learning methods you actively use" color={C.violet}>
+        <CheckGroup color={C.violet} options={["Problem-Based Learning (PBL)","Project-Based Learning","Case-Based Learning","Design Thinking workshops","Flipped Classroom","Simulation / Role-Play","Service learning / Community engagement","Research apprenticeship / Mentored inquiry","Inquiry-based learning","Studio / Maker-based learning"]} selected={data.integration.experientialLearningMethods} onChange={v=>upd("integration","experientialLearningMethods",v)}/>
+      </Field>
+      <Field label="How effective do you find experiential learning for research skill development?" hint="1 = Not effective · 5 = Highly effective" color={C.violet}>
+        <ScaleVisual value={data.integration.experientialLearningRating} onChange={v=>upd("integration","experientialLearningRating",v)} low="Not effective" high="Highly effective" color={C.violet}/>
+      </Field>
+      <Divider color={C.violet} label="Research as Real Learning" />
+      <Field label="Do you consider research participation a form of deep learning for students?" color={C.violet}>
+        <RadioGroup color={C.violet} options={["Strongly yes — research IS the highest form of learning","Yes — but only for advanced students","Partially — it depends on the research type","Not in my current teaching philosophy","I haven't considered this explicitly"]} value={data.integration.researchAsLearningView} onChange={v=>upd("integration","researchAsLearningView",v)}/>
+      </Field>
+      <Field label="How do your assessment practices connect to research skills?" color={C.violet}>
+        <RadioGroup color={C.violet} options={["Assessments explicitly test research skills (analysis, synthesis, inquiry)","Some assessments embed research tasks","Mostly exam-based with little research component","I would like to redesign assessments with research-inquiry elements","Not applicable to my discipline"]} value={data.integration.assessmentResearchLink} onChange={v=>upd("integration","assessmentResearchLink",v)}/>
+      </Field>
+      <Field label="What is your biggest challenge in integrating teaching with research?" required color={C.violet}>
+        <Textarea value={data.integration.mainChallenge} onChange={v=>upd("integration","mainChallenge",v)} rows={3} placeholder="e.g. Time, curriculum rigidity, student readiness, appraisal systems..."/>
+      </Field>
+    </>);
+
+    if (sid==="boundaries") return (<>
+      <SegmentHeader icon="⬡" label="Beyond the Classroom — Students as Solution Providers" color={C.coral}
+        subtitle="The next frontier: classrooms that produce innovators, entrepreneurs and change-makers. Tell us about your role in this transformation."
+        visual={
+          <div style={{display:"flex",gap:0,alignItems:"center",justifyContent:"center",padding:"4px 0"}}>
+            {[{label:"Student",icon:"👨‍🎓"},{label:"Learner",icon:"📚"},{label:"Researcher",icon:"🔬"},{label:"Innovator",icon:"💡"},{label:"Entrepreneur",icon:"🚀"}].map((s,i)=>(
+              <div key={s.label} style={{display:"flex",alignItems:"center"}}>
+                <div style={{textAlign:"center",width:72}}>
+                  <div style={{fontSize:22}}>{s.icon}</div>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:i===4?C.coral:C.muted,marginTop:3,fontWeight:i===4?"bold":"normal"}}>{s.label}</div>
+                </div>
+                {i<4&&<div style={{fontSize:14,color:C.coral,opacity:0.5,margin:"0 4px"}}>→</div>}
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <Divider color={C.coral} label="Current Beyond-Classroom Activities" />
+      <Field label="Activities you currently facilitate beyond the classroom" color={C.coral}>
+        <CheckGroup color={C.coral} options={["Student research projects (published/submitted)","Hackathons or innovation challenges","Industry-student collaborative projects","Student startups mentored","Social innovation projects","Patent filings with students","Product prototype development","Community-based problem-solving projects","None currently"]} selected={data.boundaries.beyondClassroomActivities} onChange={v=>upd("boundaries","beyondClassroomActivities",v)}/>
+      </Field>
+      <Field label="How do you support student innovation and entrepreneurship?" color={C.coral}>
+        <RadioGroup color={C.coral} options={["I actively mentor student startups / venture ideas","I connect students to incubators and seed funding","I integrate entrepreneurship thinking into regular teaching","I encourage students to identify real-world problems in coursework","I have not yet engaged with this area","I would like to start but need guidance"]} value={data.boundaries.studentInnovationSupport} onChange={v=>upd("boundaries","studentInnovationSupport",v)}/>
+      </Field>
+      <Divider color={C.coral} label="Ecosystem & Industry Links" />
+      <Field label="Your role in the startup / innovation ecosystem at your institution" color={C.coral}>
+        <RadioGroup color={C.coral} options={["Faculty in Residence at incubator","Mentor to student startups","Industry liaison for student projects","Advisory board of startup","No formal role — ad hoc involvement","No current role","Would like a role"]} value={data.boundaries.startupEcosystemRole} onChange={v=>upd("boundaries","startupEcosystemRole",v)}/>
+      </Field>
+      <Field label="Industry exposure activities you facilitate for students" color={C.coral}>
+        <CheckGroup color={C.coral} options={["Industry visits / immersion trips","Guest lectures from practitioners","Industry-sponsored capstone projects","Live client briefs in coursework","Internships with research link","Co-working / co-creation sessions with industry","None"]} selected={data.boundaries.industryExposureActivities} onChange={v=>upd("boundaries","industryExposureActivities",v)}/>
+      </Field>
+      <Field label="Do your students engage with UN Sustainable Development Goals (SDGs) in coursework?" color={C.coral}>
+        <CheckGroup color={C.coral} cols={3} options={["SDG 1: No Poverty","SDG 3: Good Health","SDG 4: Quality Education","SDG 7: Clean Energy","SDG 9: Industry & Innovation","SDG 11: Sustainable Cities","SDG 13: Climate Action","SDG 17: Partnerships","Not explicitly linked to SDGs"]} selected={data.boundaries.sdgAlignment} onChange={v=>upd("boundaries","sdgAlignment",v)}/>
+      </Field>
+      <Divider color={C.coral} label="FDP Interest & Participation" />
+      <div style={{background:C.coralLt,borderRadius:10,padding:"14px 16px",marginBottom:18,border:`1px solid ${C.coral}30`}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.coral,fontWeight:700,marginBottom:6}}>FUTURE FDP PROGRAMMES</div>
+        <div style={{fontFamily:"'Lora',Georgia,serif",fontSize:13,color:C.text2,lineHeight:1.6}}>
+          We are designing a series of FDP programmes on Research-Innovation-Entrepreneurship integration. Your interest helps us prioritise topics and formats.
+        </div>
+      </div>
+      <Field label="Would you be interested in participating in future FDP sessions on these themes?" required color={C.coral}>
+        <RadioGroup color={C.coral} options={["Yes — highly interested, please notify me","Yes — interested if the topic is relevant","Maybe — depends on time commitment","Unlikely, but open to short sessions","No"]} value={data.boundaries.fdpInterestedInJoining} onChange={v=>upd("boundaries","fdpInterestedInJoining",v)}/>
+      </Field>
+      <Field label="FDP topics you would most benefit from" color={C.coral}>
+        <CheckGroup color={C.coral} options={["Research-to-startup: IP to market","Design thinking for educators","Student innovation programme design","Research paper writing with AI tools","Grant writing and funding acquisition","Incubator model for academic institutions","Transdisciplinary curriculum design","Evidence-based teaching practices","SDG-aligned research projects","International research collaboration"]} selected={data.boundaries.fdpTopicsInterested} onChange={v=>upd("boundaries","fdpTopicsInterested",v)}/>
+      </Field>
+      <Field label="Are you engaged in any policy, advocacy or public engagement related to your research?" color={C.coral}>
+        <RadioGroup color={C.coral} options={["Yes — active policy engagement","Yes — invited expert occasionally","I write for public / popular science audiences","I would like to but haven't started","No"]} value={data.boundaries.policyEngagement} onChange={v=>upd("boundaries","policyEngagement",v)}/>
+      </Field>
+    </>);
+
+    if (sid==="career") return (<>
+      <SegmentHeader icon="◓" label="Faculty Career Pathways — Aspirations & Future Positioning" color={C.amber}
+        subtitle="This section helps us understand where you want to go — so we can design support that is truly aligned to your ambitions, not just institutional requirements."
+        visual={
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+            {[
+              {role:"Administrator",icon:"🏛️",desc:"Policy · Leadership · Governance",col:C.amber},
+              {role:"Teacher",icon:"📖",desc:"Pedagogy · Curriculum · Mentoring",col:C.violet},
+              {role:"Researcher",icon:"🔬",desc:"Discovery · Publication · Grants",col:C.teal},
+              {role:"Entrepreneur",icon:"🚀",desc:"Startup · IP · Industry · Impact",col:C.coral},
+            ].map(r=>(
+              <div key={r.role} style={{background:r.col+"12",borderRadius:10,padding:"12px 10px",textAlign:"center",border:`1px solid ${r.col}30`}}>
+                <div style={{fontSize:22,marginBottom:5}}>{r.icon}</div>
+                <div style={{fontFamily:"'Lora',Georgia,serif",fontWeight:700,fontSize:11,color:r.col,marginBottom:3}}>{r.role}</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:C.muted,lineHeight:1.4}}>{r.desc}</div>
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <Divider color={C.amber} label="Current Identity & Primary Role" />
+      <Field label="Which roles best describe your current academic identity?" hint="Select all that apply — your primary and secondary identities" color={C.amber}>
+        <CheckGroup color={C.amber} options={["Teacher / Educator","Researcher / Scholar","Academic Administrator","Industry Consultant","Entrepreneur / Innovator","Mentor / Coach","Policy Contributor","Public Intellectual","None of the above applies fully"]} selected={data.career.primaryIdentity} onChange={v=>upd("career","primaryIdentity",v)}/>
+      </Field>
+      <Field label="Your current primary role (formal designation function)" color={C.amber}>
+        <RadioGroup color={C.amber} options={["Teaching-focused (minimal research expected)","Research-focused (teaching is secondary)","Equal teaching and research responsibilities","Administrative with teaching/research load","Industry-sponsored / practitioner role"]} value={data.career.currentRole} onChange={v=>upd("career","currentRole",v)}/>
+      </Field>
+      <Divider color={C.amber} label="Future Pathway Aspirations" />
+      <div style={{marginBottom:18}}>
+        <div style={{fontFamily:"'Lora',Georgia,serif",fontWeight:600,fontSize:14,color:C.text,marginBottom:12}}>Where do you see yourself in 5–7 years? <span style={{color:C.coral}}>*</span></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+          {[
+            {id:"admin",title:"Academic Administrator",icon:"🏛️",desc:"HOD · Dean · VC · Policy leader",col:C.amber},
+            {id:"teacher",title:"Scholar-Educator",icon:"📖",desc:"Master teacher · Curriculum innovator · Pedagogy researcher",col:C.violet},
+            {id:"researcher",title:"Research Scholar",icon:"🔬",desc:"Principal Investigator · Grant leader · Global collaborator",col:C.teal},
+            {id:"entrepreneur",title:"Academic Entrepreneur",icon:"🚀",desc:"Startup founder · IP commercialiser · Industry partner",col:C.coral},
+          ].map(p=>(
+            <PathwayCard key={p.id} title={p.title} icon={p.icon} desc={p.desc} color={p.col}
+              selected={data.career.futurePathway===p.id}
+              onClick={()=>upd("career","futurePathway",p.id)}/>
+          ))}
+        </div>
+      </div>
+      <Field label="Specific aspiration in your chosen pathway" hint="What does success look like for you in 5–7 years? Be concrete." color={C.amber}>
+        <Textarea value={data.career.fiveYearVision} onChange={v=>upd("career","fiveYearVision",v)} rows={3} placeholder="e.g. Lead a funded research centre with 5 PhD students, publish in top-10 journals, file 2 patents..."/>
+      </Field>
+      <Field label="Timeline for your most important career milestone" color={C.amber}>
+        <RadioGroup color={C.amber} options={["Within 1 year","1–2 years","3–5 years","5–10 years","Beyond 10 years","Unclear"]} value={data.career.timelineAspiration} onChange={v=>upd("career","timelineAspiration",v)}/>
+      </Field>
+      <Divider color={C.amber} label="Skills, Gaps & Upskilling" />
+      <Field label="Skills gaps you need to address to reach your pathway" color={C.amber}>
+        <CheckGroup color={C.amber} options={["Research methodology","Grant writing","Academic writing quality","Data analysis & statistics","AI tools proficiency","Leadership & management","Entrepreneurship & commercialisation","International collaboration","Digital pedagogy","Teaching effectiveness","Policy & governance","Industry networking","IP / Patent management"]} selected={data.career.skillGaps} onChange={v=>upd("career","skillGaps",v)}/>
+      </Field>
+      <Field label="Top 3 upskilling priorities for the next 12 months" hint="Which of the above will you actively pursue first?" color={C.amber}>
+        <Textarea value={data.career.upskillPriorities} onChange={v=>upd("career","upskillPriorities",v)} rows={2} placeholder="e.g. AI tools for research, grant writing, academic leadership..."/>
+      </Field>
+      <Field label="Preferred mode for professional development / upskilling" color={C.amber}>
+        <CheckGroup color={C.amber} options={["Online self-paced courses","Structured FDP workshops","International conferences","Peer learning / Collaborative research","Mentoring from senior faculty","Industry immersion / Sabbaticals","Fellowship programmes","Post-doctoral / advanced study"]} selected={data.career.supportNeeded} onChange={v=>upd("career","supportNeeded",v)}/>
+      </Field>
+      <Divider color={C.amber} label="Mentoring & Leadership" />
+      <Field label="Are you interested in becoming a mentor to other faculty or early-career researchers?" color={C.amber}>
+        <RadioGroup color={C.amber} options={["Yes — I already mentor others formally","Yes — I mentor informally, open to formal role","Interested but need structure and training","Interested in being mentored myself first","Not interested currently"]} value={data.career.mentoringRole} onChange={v=>upd("career","mentoringRole",v)}/>
+      </Field>
+      <Field label="Do you aspire to an international dimension in your career?" color={C.amber}>
+        <RadioGroup color={C.amber} options={["Yes — I actively pursue international collaborations and roles","Yes — I am open to international opportunities","I would like to but face barriers (visa, language, funding)","Not a priority","No"]} value={data.career.internationalAspiration} onChange={v=>upd("career","internationalAspiration",v)}/>
+      </Field>
+      <Field label="What are the biggest obstacles to your career progression?" color={C.amber}>
+        <CheckGroup color={C.amber} options={["Heavy teaching load","Lack of funding","Institutional bureaucracy","Limited mentoring/guidance","Personal/family commitments","Skill gaps","No clear pathway at institution","Lack of recognition for research","Lack of entrepreneurial ecosystem"]} selected={data.career.careerObstacles} onChange={v=>upd("career","careerObstacles",v)}/>
+      </Field>
+    </>);
+
+    if (sid==="aspirations") return (<>
+      <SegmentHeader icon="★" label="Aspirations, Commitments & Final Reflections" color={C.teal}
+        subtitle="This final section is your public commitment. Your responses help us close the loop between aspiration and action — and become part of the research dataset."/>
+      <Field label="Your single most important goal in the next 12 months" required color={C.teal}>
+        <Textarea value={data.aspirations.oneYearGoal} onChange={v=>upd("aspirations","oneYearGoal",v)} rows={2} placeholder="One concrete, actionable goal — not a general aspiration"/>
+      </Field>
+      <Field label="If you could turn one piece of research into an innovation — what would it be?" hint="Blue-sky thinking. This seed idea feeds Activity E of today's session." color={C.teal}>
+        <Textarea value={data.aspirations.innovationIdea} onChange={v=>upd("aspirations","innovationIdea",v)} rows={3} placeholder="Describe the product/service, the problem it solves, who benefits..."/>
+      </Field>
+      <Field label="Are you open to collaboration with other FDP participants?" color={C.teal}>
+        <RadioGroup color={C.teal} options={["Yes — actively looking for collaborators","Yes — open if the right match emerges","Maybe — depends on the topic","Prefer solo work for now"]} value={data.aspirations.collaborationInterest} onChange={v=>upd("aspirations","collaborationInterest",v)}/>
+      </Field>
+      <Field label="One concrete action you commit to in the next 7 days" required hint="This becomes your public commitment — displayed (anonymously) at session close" color={C.teal}>
+        <Textarea value={data.aspirations.commitmentAction} onChange={v=>upd("aspirations","commitmentAction",v)} rows={2} placeholder="e.g. I will create one infographic of my research and post it on LinkedIn..."/>
+      </Field>
+      <Field label="Any other thoughts, suggestions, or context for the research team?" color={C.teal}>
+        <Textarea value={data.aspirations.additionalThoughts} onChange={v=>upd("aspirations","additionalThoughts",v)} rows={3} placeholder="Open space — share anything not captured above..."/>
+      </Field>
+      <div style={{background:C.emeraldLt,borderRadius:10,padding:"16px",border:`1px solid ${C.emerald}40`,marginTop:12}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.emerald,fontWeight:700,marginBottom:6}}>RESEARCH DATA NOTE</div>
+        <div style={{fontFamily:"'Lora',Georgia,serif",fontSize:13,color:C.text2,lineHeight:1.6}}>
+          All responses are securely stored and anonymised before analysis. Aggregate findings will be shared with all participants. This data contributes to a mixed-methods research paper on FDP effectiveness, Research-Innovation integration, and faculty career development pathways.
+        </div>
+      </div>
+    </>);
+
+    return <div style={{color:C.muted,fontFamily:"'DM Mono',monospace",textAlign:"center",padding:40}}>Section under construction</div>;
+  };
+
+  if (submitted) return (
+    <div style={{minHeight:"100vh",background:C.ink,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Lora',Georgia,serif"}}>
+      <div style={{textAlign:"center",color:"#fff",maxWidth:500,padding:40}}>
+        <div style={{fontSize:56,marginBottom:20}}>✦</div>
+        <h2 style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:32,fontWeight:700,marginBottom:14}}>Thank You</h2>
+        <p style={{fontSize:15,color:C.muted,lineHeight:1.7,marginBottom:20}}>
+          Your responses are recorded. You are now a co-author of a knowledge commons of <strong style={{color:"#fff"}}>80 faculty researchers</strong>.
+        </p>
+        <p style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.teal,letterSpacing:2}}>RESEARCH DATA — CAPTURED ✓</p>
+        {data.aspirations.commitmentAction&&(
+          <div style={{marginTop:28,padding:"18px 22px",border:`1px solid ${C.teal}50`,borderRadius:12,background:"rgba(0,180,166,0.06)"}}>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,letterSpacing:2,marginBottom:8}}>YOUR 7-DAY COMMITMENT</div>
+            <p style={{fontSize:15,color:C.teal,fontStyle:"italic",lineHeight:1.5}}>"{data.aspirations.commitmentAction}"</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Lora',Georgia,serif"}}>
+      {/* ── TOP BAR ── */}
+      <div className="top-bar-container">
+        <div className="top-bar-inner">
+          <div className="top-bar-text">
+            <div className="top-bar-subtitle">FDP Research Survey · Research Data Point #1</div>
+            <h1 className="top-bar-title">
+              Faculty Research, Innovation &<br/>Career Pathways Survey
+            </h1>
+          </div>
+          <div>
+            <img src="/static/jain logo.png" alt="Jain Logo" className="top-bar-logo" />
+          </div>
+        </div>
+        <div style={{maxWidth:800,margin:"0 auto",padding:"0 28px 16px"}}>
+          <ProgressBar current={section} total={SECTIONS.length}/>
+        </div>
+        {/* Section tabs */}
+        <div className="section-tabs">
+          {SECTIONS.map((s,i)=>(
+            <button key={s.id} onClick={()=>i<=section&&setSection(i)}
+              className="section-tab-btn"
+              style={{
+                borderBottom:`3px solid ${i===section?s.color:"transparent"}`,
+                cursor:i<=section?"pointer":"default",
+                color:i===section?s.color:i<section?"#6B8A9A":"#94A3B8",
+              }}>{s.icon} {s.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── CONTENT ── */}
+      <div style={{maxWidth:800,margin:"0 auto",padding:"0 20px 60px"}}>
+        <div style={{background:C.white,border:`1px solid ${C.border}`,borderTop:"none",padding:"28px 32px 24px",marginBottom:0}}>
+          {renderSection()}
+        </div>
+
+        {/* ── NAV ── */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderTop:`1px solid ${C.border}`}}>
+          <button onClick={()=>setSection(s=>Math.max(0,s-1))} disabled={section===0}
+            style={{padding:"11px 24px",border:`2px solid ${section===0?C.border:C.ink}`,
+            background:C.white,color:section===0?C.muted:C.ink,
+            fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:1,
+            cursor:section===0?"not-allowed":"pointer",borderRadius:8,transition:"all 0.2s"}}>
+            ← Previous
+          </button>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted,letterSpacing:1}}>
+            {section+1} / {SECTIONS.length}
+          </div>
+          {section<SECTIONS.length-1?(
+            <button onClick={()=>setSection(s=>Math.min(SECTIONS.length-1,s+1))}
+              style={{padding:"11px 24px",border:"none",
+              background:`linear-gradient(135deg, ${col}, ${col}CC)`,
+              color:"#fff",fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:1,
+              cursor:"pointer",borderRadius:8,
+              boxShadow:`0 4px 12px ${col}40`,transition:"all 0.2s"}}>
+              Next →
+            </button>
+          ):(
+            <button onClick={handleSubmit}
+              style={{padding:"11px 28px",border:"none",
+              background:`linear-gradient(135deg, ${C.teal}, ${C.emerald})`,
+              color:"#fff",fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:1,
+              cursor:"pointer",borderRadius:8,
+              boxShadow:`0 4px 16px ${C.teal}40`}}>
+              Submit Survey ✦
+            </button>
+          )}
+        </div>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,letterSpacing:1,textAlign:"center",marginTop:8}}>
+          DATA IS ANONYMISED · ACADEMIC RESEARCH USE ONLY · FDP — RESEARCH, INNOVATION & KNOWLEDGE CREATION
+        </div>
+      </div>
+    </div>
+  );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────────────────────────────────────
-goTo(0);
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<FDPForm />);
 </script>
+{% endraw %}
 {% endblock %}

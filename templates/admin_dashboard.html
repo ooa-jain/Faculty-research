@@ -123,7 +123,7 @@
           {% endif %}
         </td>
         <td>{{ doc.identity.institution or '—' }}</td>
-        <td>{{ doc.research.primaryDomain or '—' }}</td>
+        <td>{{ doc.research.domain or '—' }}</td>
         <td>
           {% if doc.aitools.overallComfort %}
             <span class="badge badge-blue">{{ doc.aitools.overallComfort }} / 5</span>

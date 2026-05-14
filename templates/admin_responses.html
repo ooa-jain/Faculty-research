@@ -44,7 +44,7 @@
         </td>
         <td style="font-size:12px">{{ doc.identity.institution or '—' }}</td>
         <td style="font-size:11px">{{ doc.identity.designation or '—' }}</td>
-        <td style="font-size:11px">{{ doc.research.primaryDomain or '—' }}</td>
+        <td style="font-size:11px">{{ doc.research.domain or '—' }}</td>
         <td>
           {% if doc.aitools.overallComfort %}
             <span class="badge badge-blue">{{ doc.aitools.overallComfort }}/5</span>
