@@ -490,15 +490,184 @@
     const col = SECTIONS[section].color;
 
     const handleSubmit = async () => {
-      // validation
-      if (!data.consent.agreed || data.consent.agreed.startsWith("No")) {
-        alert("Please consent to participate before submitting.");
-        setSection(0); return;
-      }
-      if (!data.identity.name || !data.identity.institution || !data.identity.department) {
-        alert("Name, Institution, and Department are required fields.");
-        setSection(0); return;
-      }
+      // ── Comprehensive validation ──────────────────────────────────────────
+      const err = (msg, sec) => { alert(msg); setSection(sec); return false; };
+
+      // Section 0 — Consent & Identity
+      if (!data.consent.agreed || data.consent.agreed.startsWith("No"))
+        return err("Please give your consent to participate (Section 1).", 0);
+      if (!data.identity.name.trim())
+        return err("Full Name is required (Section 1).", 0);
+      if (!data.identity.email.trim())
+        return err("Email Address is required (Section 1).", 0);
+      if (!data.identity.institution.trim())
+        return err("Institution / University is required (Section 1).", 0);
+      if (!data.identity.department.trim())
+        return err("Department / School is required (Section 1).", 0);
+      if (!data.identity.designation)
+        return err("Designation is required (Section 1).", 0);
+      if (!data.identity.yearsExp)
+        return err("Years of Experience is required (Section 1).", 0);
+
+      // Section 1 — Research Profile
+      if (!data.research.domain.trim())
+        return err("Primary Research Domain is required (Section 2).", 1);
+      if (!data.research.subDomain.trim())
+        return err("Sub-Domain / Specialisation is required (Section 2).", 1);
+      if (!data.research.keywords.trim())
+        return err("Research Keywords are required (Section 2).", 1);
+      if (!data.research.approaches.length)
+        return err("Please select at least one Research Approach (Section 2).", 1);
+      if (!data.research.paradigm)
+        return err("Research Paradigm is required (Section 2).", 1);
+      if (!data.research.focus.trim())
+        return err("Current Research Focus is required (Section 2).", 1);
+      if (!data.research.collabTypes.length)
+        return err("Please select a Collaboration Pattern (Section 2).", 1);
+      if (!data.research.funding)
+        return err("Funding Status is required (Section 2).", 1);
+
+      // Section 2 — Publication History
+      if (!data.publication.total)
+        return err("Total Publications is required (Section 3).", 2);
+      if (!data.publication.indexed)
+        return err("Scopus / WoS Indexed Papers is required (Section 3).", 2);
+      if (!data.publication.hIndex)
+        return err("h-Index is required (Section 3).", 2);
+      if (!data.publication.citations)
+        return err("Total Citations is required (Section 3).", 2);
+      if (!data.publication.lastYear)
+        return err("Year of most recent publication is required (Section 3).", 2);
+      if (!data.publication.patents)
+        return err("Patents field is required (Section 3).", 2);
+      if (!data.publication.journalTypes.length)
+        return err("Please select at least one Publication Venue type (Section 3).", 2);
+      if (!data.publication.biggestChallenge.trim())
+        return err("Biggest challenge in publishing is required (Section 3).", 2);
+
+      // Section 3 — Innovation
+      if (!data.innovation.hasProject)
+        return err("Innovation Project status is required (Section 4).", 3);
+      if (!data.innovation.barriers.length)
+        return err("Please select at least one Innovation Barrier (Section 4).", 3);
+      if (!data.innovation.industry)
+        return err("Industry Collaboration experience is required (Section 4).", 3);
+      if (!data.innovation.ipAwareness)
+        return err("IP Awareness is required (Section 4).", 3);
+
+      // Section 4 — AI Tools
+      if (!data.aitools.overallComfort)
+        return err("Please rate your AI Comfort level (Section 5).", 4);
+      if (!data.aitools.toolsUsed.length)
+        return err("Please select at least one AI Tool (Section 5).", 4);
+      if (!data.aitools.usageContexts.length)
+        return err("Please select at least one AI Usage Context (Section 5).", 4);
+      if (!data.aitools.researchUse.trim())
+        return err("AI use in research is required (Section 5).", 4);
+      if (!data.aitools.teachingUse.trim())
+        return err("AI use in teaching is required (Section 5).", 4);
+      if (!data.aitools.concerns.length)
+        return err("Please select at least one AI Concern (Section 5).", 4);
+      if (!data.aitools.opportunityRating)
+        return err("Please rate the AI Opportunity for your domain (Section 5).", 4);
+
+      // Section 5 — AI for Global Publication
+      if (!data.aipublication.aiLitReviewUse)
+        return err("AI Literature Review usage is required (Section 6).", 5);
+      if (!data.aipublication.aiJournalMatch)
+        return err("AI Journal Matching field is required (Section 6).", 5);
+      if (!data.aipublication.aiDataAnalysis)
+        return err("AI Data Analysis field is required (Section 6).", 5);
+      if (!data.aipublication.aiCoAuthorView)
+        return err("AI Co-author View is required (Section 6).", 5);
+      if (!data.aipublication.aiEthicsStance)
+        return err("AI Ethics Stance is required (Section 6).", 5);
+      if (!data.aipublication.openAccessAwareness)
+        return err("Open Access Awareness is required (Section 6).", 5);
+      if (!data.aipublication.preregistrationAwareness)
+        return err("Pre-registration Awareness is required (Section 6).", 5);
+      if (!data.aipublication.altmetricsAwareness)
+        return err("Altmetrics Awareness is required (Section 6).", 5);
+      if (!data.aipublication.globalCollabInterest)
+        return err("Global Collaboration Interest is required (Section 6).", 5);
+      if (!data.aipublication.aiPublicationBarriers.length)
+        return err("Please select at least one Publication Barrier (Section 6).", 5);
+      if (!data.aipublication.aiPublicationOpportunities.length)
+        return err("Please select where AI can help your publication journey (Section 6).", 5);
+      if (!data.aipublication.publishingAmbition.trim())
+        return err("Your 3-year Publishing Ambition is required (Section 6).", 5);
+
+      // Section 6 — Learning–Research Integration
+      if (!data.integration.integrationLevel)
+        return err("Please rate your Teaching–Research Integration level (Section 7).", 6);
+      if (!data.integration.integrationMethods.length)
+        return err("Please select at least one Integration Method (Section 7).", 6);
+      if (!data.integration.notionalHoursAwareness)
+        return err("Notional Learning Hours Awareness is required (Section 7).", 6);
+      if (!data.integration.notionalHoursUse)
+        return err("Notional Hours Use field is required (Section 7).", 6);
+      if (!data.integration.experientialLearningMethods.length)
+        return err("Please select at least one Experiential Learning Method (Section 7).", 6);
+      if (!data.integration.experientialLearningRating)
+        return err("Please rate Experiential Learning effectiveness (Section 7).", 6);
+      if (!data.integration.researchAsLearningView)
+        return err("Research as Learning View is required (Section 7).", 6);
+      if (!data.integration.assessmentResearchLink)
+        return err("Assessment–Research Link is required (Section 7).", 6);
+      if (!data.integration.mainChallenge.trim())
+        return err("Biggest Integration Challenge is required (Section 7).", 6);
+
+      // Section 7 — Beyond the Classroom
+      if (!data.boundaries.beyondClassroomActivities.length)
+        return err("Please select at least one Beyond-Classroom Activity (Section 8).", 7);
+      if (!data.boundaries.studentInnovationSupport)
+        return err("Student Innovation Support field is required (Section 8).", 7);
+      if (!data.boundaries.startupEcosystemRole)
+        return err("Startup Ecosystem Role is required (Section 8).", 7);
+      if (!data.boundaries.industryExposureActivities.length)
+        return err("Please select at least one Industry Exposure Activity (Section 8).", 7);
+      if (!data.boundaries.sdgAlignment.length)
+        return err("Please select at least one SDG alignment (Section 8).", 7);
+      if (!data.boundaries.fdpInterestedInJoining)
+        return err("FDP Interest is required (Section 8).", 7);
+      if (!data.boundaries.fdpTopicsInterested.length)
+        return err("Please select at least one FDP Topic of interest (Section 8).", 7);
+      if (!data.boundaries.policyEngagement)
+        return err("Policy Engagement field is required (Section 8).", 7);
+
+      // Section 8 — Career Pathways
+      if (!data.career.primaryIdentity.length)
+        return err("Academic Identity is required (Section 9).", 8);
+      if (!data.career.currentRole)
+        return err("Current Primary Role is required (Section 9).", 8);
+      if (!data.career.futurePathway)
+        return err("Please select your Future Career Pathway (Section 9).", 8);
+      if (!data.career.fiveYearVision.trim())
+        return err("Specific Aspiration / 5-Year Vision is required (Section 9).", 8);
+      if (!data.career.timelineAspiration)
+        return err("Career Milestone Timeline is required (Section 9).", 8);
+      if (!data.career.skillGaps.length)
+        return err("Please select at least one Skill Gap (Section 9).", 8);
+      if (!data.career.upskillPriorities.trim())
+        return err("Top Upskilling Priorities are required (Section 9).", 8);
+      if (!data.career.supportNeeded.length)
+        return err("Preferred Professional Development mode is required (Section 9).", 8);
+      if (!data.career.mentoringRole)
+        return err("Mentoring Interest is required (Section 9).", 8);
+      if (!data.career.internationalAspiration)
+        return err("International Aspiration is required (Section 9).", 8);
+      if (!data.career.careerObstacles.length)
+        return err("Please select at least one Career Obstacle (Section 9).", 8);
+
+      // Section 9 — Aspirations
+      if (!data.aspirations.oneYearGoal.trim())
+        return err("Your 12-Month Goal is required (Section 10).", 9);
+      if (!data.aspirations.innovationIdea.trim())
+        return err("Innovation Idea is required (Section 10).", 9);
+      if (!data.aspirations.collaborationInterest)
+        return err("Collaboration Interest is required (Section 10).", 9);
+      if (!data.aspirations.commitmentAction.trim())
+        return err("7-Day Commitment Action is required (Section 10).", 9);
 
       try {
         const res = await fetch('/api/submit', {
@@ -589,7 +758,7 @@
         <Divider color={C.teal} label="Participant Identity" />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 18px" }}>
           <Field label="Full Name" hint="Your name will be kept anonymous" required color={C.teal}><Input value={data.identity.name} onChange={v => upd("identity", "name", v)} placeholder="Dr. / Prof. ..." /></Field>
-          <Field label="Email Address" color={C.teal}><Input type="email" value={data.identity.email} onChange={v => upd("identity", "email", v)} placeholder="you@institution.edu" /></Field>
+          <Field label="Email Address" required color={C.teal}><Input type="email" value={data.identity.email} onChange={v => upd("identity", "email", v)} placeholder="you@institution.edu" /></Field>
           <Field label="Institution / University" required color={C.teal}><Input value={data.identity.institution} onChange={v => upd("identity", "institution", v)} placeholder="Name of institution" /></Field>
           <Field label="Department / School" required color={C.teal}><Input value={data.identity.department} onChange={v => upd("identity", "department", v)} placeholder="Dept. of ..." /></Field>
           <Field label="Designation" required color={C.teal}>
@@ -621,22 +790,22 @@
           }
         />
         <Field label="Primary Research Domain" required color={C.violet}><Input value={data.research.domain} onChange={v => upd("research", "domain", v)} placeholder="e.g. Biochemistry, Mechanical Engineering, Education..." /></Field>
-        <Field label="Sub-Domain / Specialisation" hint="Be specific — helps identify transdisciplinary connections across 80 participants" color={C.violet}><Input value={data.research.subDomain} onChange={v => upd("research", "subDomain", v)} placeholder="e.g. Additive Manufacturing, Epigenetics, EdTech..." /></Field>
+        <Field label="Sub-Domain / Specialisation" hint="Be specific — helps identify transdisciplinary connections across 80 participants" required color={C.violet}><Input value={data.research.subDomain} onChange={v => upd("research", "subDomain", v)} placeholder="e.g. Additive Manufacturing, Epigenetics, EdTech..." /></Field>
         <Field label="Top 5 Research Keywords" hint="Comma-separated — used for network mapping" required color={C.violet}><Input value={data.research.keywords} onChange={v => upd("research", "keywords", v)} placeholder="keyword1, keyword2, keyword3..." /></Field>
         <Field label="Research Approach(es)" required color={C.violet}>
           <CheckGroup color={C.violet} options={["Quantitative", "Qualitative", "Mixed Methods", "Experimental", "Theoretical", "Computational", "Design-based", "Action Research"]} selected={data.research.approaches} onChange={v => upd("research", "approaches", v)} />
         </Field>
-        <Field label="Research Paradigm" color={C.violet}>
+        <Field label="Research Paradigm" required color={C.violet}>
           <RadioGroup color={C.violet} options={["Positivist", "Interpretivist", "Critical", "Pragmatist", "Constructivist", "Post-positivist", "Any other"]} value={data.research.paradigm} onChange={v => upd("research", "paradigm", v)} />
         </Field>
         <Field label="Current Research Focus" hint="What problem are you working on right now? 2–3 sentences." required color={C.violet}>
           <Textarea value={data.research.focus} onChange={v => upd("research", "focus", v)} rows={3} placeholder="Describe the core problem your research addresses..." />
         </Field>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 18px" }}>
-          <Field label="Collaboration Pattern(s)" color={C.violet}>
+          <Field label="Collaboration Pattern(s)" required color={C.violet}>
             <CheckGroup color={C.violet} cols={1} options={["Solo research", "Within institution", "Inter-institutional", "International", "Industry-academia", "Citizen science"]} selected={data.research.collabTypes} onChange={v => upd("research", "collabTypes", v)} />
           </Field>
-          <Field label="Funding Status" color={C.violet}>
+          <Field label="Funding Status" required color={C.violet}>
             <RadioGroup color={C.violet} options={["Unfunded (self-driven)", "Internal seed grant", "DST / SERB / CSIR external", "Industry-funded", "International grant", "Seeking funding"]} value={data.research.funding} onChange={v => upd("research", "funding", v)} />
           </Field>
         </div>
@@ -660,23 +829,23 @@
           <Field label="Total peer-reviewed publications" required color={C.amber}>
             <Select value={data.publication.total} onChange={v => upd("publication", "total", v)} options={["0", "1–5", "6–10", "11–20", "21–40", "41–60", "60+"]} />
           </Field>
-          <Field label="Scopus / WoS indexed papers" color={C.amber}>
+          <Field label="Scopus / WoS indexed papers" required color={C.amber}>
             <Select value={data.publication.indexed} onChange={v => upd("publication", "indexed", v)} options={["0", "1–5", "6–10", "11–20", "21–40", "40+"]} />
           </Field>
-          <Field label="h-index (approximate)" color={C.amber}>
+          <Field label="h-index (approximate)" required color={C.amber}>
             <Select value={data.publication.hIndex} onChange={v => upd("publication", "hIndex", v)} options={["0", "1–3", "4–6", "7–10", "11–15", "16–20", "21+"]} />
           </Field>
-          <Field label="Total citations (approximate)" color={C.amber}>
+          <Field label="Total citations (approximate)" required color={C.amber}>
             <Select value={data.publication.citations} onChange={v => upd("publication", "citations", v)} options={["0", "1–50", "51–200", "201–500", "501–1000", "1000–5000", "5000+"]} />
           </Field>
-          <Field label="Year of most recent publication" color={C.amber}>
+          <Field label="Year of most recent publication" required color={C.amber}>
             <Select value={data.publication.lastYear} onChange={v => upd("publication", "lastYear", v)} options={["2025", "2024", "2023", "2022", "2021", "Before 2020", "Not published yet"]} />
           </Field>
-          <Field label="Patents filed or granted" color={C.amber}>
+          <Field label="Patents filed or granted" required color={C.amber}>
             <Select value={data.publication.patents} onChange={v => upd("publication", "patents", v)} options={["0", "1 filed", "2–3 filed", "1 granted", "2–5 granted", "5+ granted"]} />
           </Field>
         </div>
-        <Field label="Types of publication venues" color={C.amber}>
+        <Field label="Types of publication venues" required color={C.amber}>
           <CheckGroup color={C.amber} options={["Scopus indexed", "Web of Science", "UGC-CARE", "High IF (>3)", "Open access", "Conference proceedings", "Book chapters"]} selected={data.publication.journalTypes} onChange={v => upd("publication", "journalTypes", v)} />
         </Field>
         <Field label="Biggest challenge in publishing" required hint="Be candid — feeds directly into curriculum design" color={C.amber}>
@@ -701,10 +870,10 @@
         <Field label="Barriers to taking research to innovation" required color={C.coral}>
           <CheckGroup color={C.coral} options={["Lack of time", "No funding", "Institutional support", "IP/TRL awareness", "Industry connect", "Entrepreneurial mindset", "Regulatory hurdles", "Team gaps"]} selected={data.innovation.barriers} onChange={v => upd("innovation", "barriers", v)} />
         </Field>
-        <Field label="Industry collaboration experience" color={C.coral}>
+        <Field label="Industry collaboration experience" required color={C.coral}>
           <RadioGroup color={C.coral} options={["Active industry partner", "Past partnerships", "Consultancy work", "Informal connections only", "None"]} value={data.innovation.industry} onChange={v => upd("innovation", "industry", v)} />
         </Field>
-        <Field label="IP awareness at your institution" color={C.coral}>
+        <Field label="IP awareness at your institution" required color={C.coral}>
           <RadioGroup color={C.coral} options={["Very aware — have used IP processes", "Aware but haven't used", "Heard of it, unclear on process", "Not aware at all"]} value={data.innovation.ipAwareness} onChange={v => upd("innovation", "ipAwareness", v)} />
         </Field>
       </>);
@@ -727,17 +896,17 @@
         <Field label="AI tools you have used (even once)" required color={C.teal}>
           <CheckGroup color={C.teal} cols={3} options={["ChatGPT", "Claude", "Gemini", "Copilot", "Perplexity", "Elicit", "ResearchRabbit", "Scite.ai", "Consensus", "Canva AI", "Napkin.ai", "Gamma", "Grammarly AI", "NotebookLM", "None yet"]} selected={data.aitools.toolsUsed} onChange={v => upd("aitools", "toolsUsed", v)} />
         </Field>
-        <Field label="Contexts where you have used AI" color={C.teal}>
+        <Field label="Contexts where you have used AI" required color={C.teal}>
           <CheckGroup color={C.teal} options={["Literature review", "Writing assistance", "Data analysis", "Teaching materials", "Presentation design", "Research ideation", "Grant writing", "Code generation", "None"]} selected={data.aitools.usageContexts} onChange={v => upd("aitools", "usageContexts", v)} />
         </Field>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 18px" }}>
-          <Field label="How do you use AI in research?" color={C.teal}><Textarea value={data.aitools.researchUse} onChange={v => upd("aitools", "researchUse", v)} rows={2} placeholder="Specific use cases or 'Not yet'" /></Field>
-          <Field label="How do you use AI in teaching?" color={C.teal}><Textarea value={data.aitools.teachingUse} onChange={v => upd("aitools", "teachingUse", v)} rows={2} placeholder="Specific use cases or 'Not yet'" /></Field>
+          <Field label="How do you use AI in research?" required color={C.teal}><Textarea value={data.aitools.researchUse} onChange={v => upd("aitools", "researchUse", v)} rows={2} placeholder="Specific use cases or 'Not yet'" /></Field>
+          <Field label="How do you use AI in teaching?" required color={C.teal}><Textarea value={data.aitools.teachingUse} onChange={v => upd("aitools", "teachingUse", v)} rows={2} placeholder="Specific use cases or 'Not yet'" /></Field>
         </div>
-        <Field label="AI concerns in academia" color={C.teal}>
+        <Field label="AI concerns in academia" required color={C.teal}>
           <CheckGroup color={C.teal} options={["Academic integrity", "Data privacy", "Over-reliance", "Job displacement", "Misinformation", "Bias in outputs", "No concerns"]} selected={data.aitools.concerns} onChange={v => upd("aitools", "concerns", v)} />
         </Field>
-        <Field label="AI opportunity for your research domain" hint="1 = Little potential · 5 = Transformative" color={C.teal}>
+        <Field label="AI opportunity for your research domain" hint="1 = Little potential · 5 = Transformative" required color={C.teal}>
           <ScaleVisual value={data.aitools.opportunityRating} onChange={v => upd("aitools", "opportunityRating", v)} low="Little potential" high="Transformative" color={C.emerald} />
         </Field>
       </>);
@@ -765,13 +934,13 @@
         <Field label="Comfort using AI to enhance research writing quality" hint="Grammar, clarity, logical structure, academic tone" color={C.emerald}>
           <ScaleVisual value={data.aipublication.aiWritingComfort} onChange={v => upd("aipublication", "aiWritingComfort", v)} low="Never tried" high="Use regularly" color={C.emerald} />
         </Field>
-        <Field label="Have you used AI for literature review or gap analysis?" color={C.emerald}>
+        <Field label="Have you used AI for literature review or gap analysis?" required color={C.emerald}>
           <RadioGroup color={C.emerald} options={["Yes — regularly (e.g. Elicit, ResearchRabbit, Consensus)", "Yes — once or twice", "No, but I know how", "No, unaware of these tools", "Would like to learn"]} value={data.aipublication.aiLitReviewUse} onChange={v => upd("aipublication", "aiLitReviewUse", v)} />
         </Field>
-        <Field label="Have you used AI for journal/conference matching?" hint="Tools like Elsevier Journal Finder, Springer Journal Suggester, AI-powered submission tools" color={C.emerald}>
+        <Field label="Have you used AI for journal/conference matching?" required hint="Tools like Elsevier Journal Finder, Springer Journal Suggester, AI-powered submission tools" color={C.emerald}>
           <RadioGroup color={C.emerald} options={["Yes — I use them before submission", "Aware but haven't used", "Not aware of these tools", "I rely on manual search only"]} value={data.aipublication.aiJournalMatch} onChange={v => upd("aipublication", "aiJournalMatch", v)} />
         </Field>
-        <Field label="Have you used AI tools for statistical analysis or data visualisation?" hint="e.g. Julius AI, Code Interpreter, SPSS AI, R with LLM assistance" color={C.emerald}>
+        <Field label="Have you used AI tools for statistical analysis or data visualisation?" required hint="e.g. Julius AI, Code Interpreter, SPSS AI, R with LLM assistance" color={C.emerald}>
           <RadioGroup color={C.emerald} options={["Yes — actively", "Tried once or twice", "Aware but not used", "Not aware", "Interested in learning"]} value={data.aipublication.aiDataAnalysis} onChange={v => upd("aipublication", "aiDataAnalysis", v)} />
         </Field>
 
@@ -779,29 +948,29 @@
         <Field label="Your position on AI as a co-author or contributor to publications" required color={C.emerald}>
           <RadioGroup color={C.emerald} options={["AI should never be credited — it is a tool only", "AI assistance should be disclosed in the methodology", "AI could be acknowledged in footnotes", "I am unclear on the ethical position", "I follow my institution's current policy"]} value={data.aipublication.aiCoAuthorView} onChange={v => upd("aipublication", "aiCoAuthorView", v)} />
         </Field>
-        <Field label="Stance on academic integrity when using AI in research writing" color={C.emerald}>
+        <Field label="Stance on academic integrity when using AI in research writing" required color={C.emerald}>
           <RadioGroup color={C.emerald} options={["Full transparency — always disclose AI use", "Disclose only when substantial AI writing is involved", "Use AI only for editing/grammar — no disclosure needed", "Institutional policy unclear — I am cautious", "I need guidance on this"]} value={data.aipublication.aiEthicsStance} onChange={v => upd("aipublication", "aiEthicsStance", v)} />
         </Field>
 
         <Divider color={C.emerald} label="Global Research Visibility & Open Science" />
-        <Field label="Awareness of open access publishing and its impact on citation counts" color={C.emerald}>
+        <Field label="Awareness of open access publishing and its impact on citation counts" required color={C.emerald}>
           <RadioGroup color={C.emerald} options={["Very aware — I actively publish open access", "Aware — cost is a barrier", "Aware — my institution doesn't support APCs", "Heard of it but unclear on benefits", "Not aware"]} value={data.aipublication.openAccessAwareness} onChange={v => upd("aipublication", "openAccessAwareness", v)} />
         </Field>
-        <Field label="Awareness and use of pre-registration for research studies" hint="Pre-registering methodology before data collection — standard in high-impact journals" color={C.emerald}>
+        <Field label="Awareness and use of pre-registration for research studies" required hint="Pre-registering methodology before data collection — standard in high-impact journals" color={C.emerald}>
           <RadioGroup color={C.emerald} options={["Use pre-registration regularly", "Aware, used once", "Aware but never used", "Not aware of pre-registration", "Interested in learning more"]} value={data.aipublication.preregistrationAwareness} onChange={v => upd("aipublication", "preregistrationAwareness", v)} />
         </Field>
-        <Field label="Awareness of altmetrics and research impact beyond citations" hint="Social media reach, policy citations, media mentions, downloads" color={C.emerald}>
+        <Field label="Awareness of altmetrics and research impact beyond citations" required hint="Social media reach, policy citations, media mentions, downloads" color={C.emerald}>
           <RadioGroup color={C.emerald} options={["Very aware — I track my altmetric score", "Heard of it, unclear on how to use", "Not aware", "I focus only on citation counts", "Would like to build visibility beyond citations"]} value={data.aipublication.altmetricsAwareness} onChange={v => upd("aipublication", "altmetricsAwareness", v)} />
         </Field>
 
         <Divider color={C.emerald} label="Global Collaboration & Ambition" />
-        <Field label="Interest in international research collaboration supported by AI networking tools" color={C.emerald}>
+        <Field label="Interest in international research collaboration supported by AI networking tools" required color={C.emerald}>
           <RadioGroup color={C.emerald} options={["Yes — already have international collaborators", "Yes — actively seeking", "Open to it if the right match arises", "Not a priority currently", "Unsure how to initiate"]} value={data.aipublication.globalCollabInterest} onChange={v => upd("aipublication", "globalCollabInterest", v)} />
         </Field>
-        <Field label="Barriers to publishing in high-impact global journals" color={C.emerald}>
+        <Field label="Barriers to publishing in high-impact global journals" required color={C.emerald}>
           <CheckGroup color={C.emerald} options={["Language/writing quality", "Lack of international collaborators", "No access to premium journals", "High APC costs", "Lack of time for revision cycles", "Unfamiliarity with global norms", "Reviewer bias", "No significant barriers"]} selected={data.aipublication.aiPublicationBarriers} onChange={v => upd("aipublication", "aiPublicationBarriers", v)} />
         </Field>
-        <Field label="Where would you most like AI to help your publication journey?" color={C.emerald}>
+        <Field label="Where would you most like AI to help your publication journey?" required color={C.emerald}>
           <CheckGroup color={C.emerald} options={["Identifying research gaps", "Structuring manuscripts", "Improving writing quality", "Selecting target journals", "Responding to reviewers", "Grant writing", "Research data analysis", "Visualising findings"]} selected={data.aipublication.aiPublicationOpportunities} onChange={v => upd("aipublication", "aiPublicationOpportunities", v)} />
         </Field>
         <Field label="Your 3-year publication ambition" required color={C.emerald}>
@@ -826,10 +995,10 @@
           }
         />
         <Divider color={C.violet} label="Teaching-Research Integration Level" />
-        <Field label="Current level of teaching–research integration in your practice" hint="1 = Completely separate · 5 = Fully integrated — I teach what I research" color={C.violet}>
+        <Field label="Current level of teaching–research integration in your practice" hint="1 = Completely separate · 5 = Fully integrated — I teach what I research" required color={C.violet}>
           <ScaleVisual value={data.integration.integrationLevel} onChange={v => upd("integration", "integrationLevel", v)} low="Fully separate" high="Fully integrated" color={C.violet} />
         </Field>
-        <Field label="How do you currently integrate research into teaching?" color={C.violet}>
+        <Field label="How do you currently integrate research into teaching?" required color={C.violet}>
           <CheckGroup color={C.violet} options={["Assign research papers to students", "Student research projects", "Cite own research in lectures", "Problem-based learning from research", "Live lab demonstrations", "Research-informed curriculum design", "Co-authoring with students", "None currently"]} selected={data.integration.integrationMethods} onChange={v => upd("integration", "integrationMethods", v)} />
         </Field>
         <Divider color={C.violet} label="Notional Learning Hours" />
@@ -839,10 +1008,10 @@
             Notional learning hours represent the total time a student is expected to spend on learning — including contact hours, self-study, assignments, practicals, and research. They form the basis of credit frameworks (NBA, NEP 2020) and help align learning with research outcomes.
           </div>
         </div>
-        <Field label="Awareness of notional learning hours framework in curriculum design" color={C.violet}>
+        <Field label="Awareness of notional learning hours framework in curriculum design" required color={C.violet}>
           <RadioGroup color={C.violet} options={["Very aware — I design curricula around notional hours", "Aware — I apply it occasionally", "I have heard of it but don't apply it", "Not aware of the concept", "My institution uses it but I don't engage with it"]} value={data.integration.notionalHoursAwareness} onChange={v => upd("integration", "notionalHoursAwareness", v)} />
         </Field>
-        <Field label="How do you currently use notional hours to embed research into learning?" color={C.violet}>
+        <Field label="How do you currently use notional hours to embed research into learning?" required color={C.violet}>
           <RadioGroup color={C.violet} options={["I allocate notional hours for student research components", "I embed self-directed inquiry within notional hour budgets", "I link research project hours to credit allocation", "I haven't used notional hours for research embedding", "I would like to learn how"]} value={data.integration.notionalHoursUse} onChange={v => upd("integration", "notionalHoursUse", v)} />
         </Field>
         <Divider color={C.violet} label="Experiential Learning Methods" />
@@ -857,17 +1026,17 @@
             ))}
           </div>
         </div>
-        <Field label="Experiential learning methods you actively use" color={C.violet}>
+        <Field label="Experiential learning methods you actively use" required color={C.violet}>
           <CheckGroup color={C.violet} options={["Problem-Based Learning (PBL)", "Project-Based Learning", "Case-Based Learning", "Design Thinking workshops", "Flipped Classroom", "Simulation / Role-Play", "Service learning / Community engagement", "Research apprenticeship / Mentored inquiry", "Inquiry-based learning", "Studio / Maker-based learning"]} selected={data.integration.experientialLearningMethods} onChange={v => upd("integration", "experientialLearningMethods", v)} />
         </Field>
-        <Field label="How effective do you find experiential learning for research skill development?" hint="1 = Not effective · 5 = Highly effective" color={C.violet}>
+        <Field label="How effective do you find experiential learning for research skill development?" required hint="1 = Not effective · 5 = Highly effective" color={C.violet}>
           <ScaleVisual value={data.integration.experientialLearningRating} onChange={v => upd("integration", "experientialLearningRating", v)} low="Not effective" high="Highly effective" color={C.violet} />
         </Field>
         <Divider color={C.violet} label="Research as Real Learning" />
-        <Field label="Do you consider research participation a form of deep learning for students?" color={C.violet}>
+        <Field label="Do you consider research participation a form of deep learning for students?" required color={C.violet}>
           <RadioGroup color={C.violet} options={["Strongly yes — research IS the highest form of learning", "Yes — but only for advanced students", "Partially — it depends on the research type", "Not in my current teaching philosophy", "I haven't considered this explicitly"]} value={data.integration.researchAsLearningView} onChange={v => upd("integration", "researchAsLearningView", v)} />
         </Field>
-        <Field label="How do your assessment practices connect to research skills?" color={C.violet}>
+        <Field label="How do your assessment practices connect to research skills?" required color={C.violet}>
           <RadioGroup color={C.violet} options={["Assessments explicitly test research skills (analysis, synthesis, inquiry)", "Some assessments embed research tasks", "Mostly exam-based with little research component", "I would like to redesign assessments with research-inquiry elements", "Not applicable to my discipline"]} value={data.integration.assessmentResearchLink} onChange={v => upd("integration", "assessmentResearchLink", v)} />
         </Field>
         <Field label="What is your biggest challenge in integrating teaching with research?" required color={C.violet}>
@@ -893,20 +1062,20 @@
           }
         />
         <Divider color={C.coral} label="Current Beyond-Classroom Activities" />
-        <Field label="Activities you currently facilitate beyond the classroom" color={C.coral}>
+        <Field label="Activities you currently facilitate beyond the classroom" required color={C.coral}>
           <CheckGroup color={C.coral} options={["Student research projects (published/submitted)", "Hackathons or innovation challenges", "Industry-student collaborative projects", "Student startups mentored", "Social innovation projects", "Patent filings with students", "Product prototype development", "Community-based problem-solving projects", "None currently"]} selected={data.boundaries.beyondClassroomActivities} onChange={v => upd("boundaries", "beyondClassroomActivities", v)} />
         </Field>
-        <Field label="How do you support student innovation and entrepreneurship?" color={C.coral}>
+        <Field label="How do you support student innovation and entrepreneurship?" required color={C.coral}>
           <RadioGroup color={C.coral} options={["I actively mentor student startups / venture ideas", "I connect students to incubators and seed funding", "I integrate entrepreneurship thinking into regular teaching", "I encourage students to identify real-world problems in coursework", "I have not yet engaged with this area", "I would like to start but need guidance"]} value={data.boundaries.studentInnovationSupport} onChange={v => upd("boundaries", "studentInnovationSupport", v)} />
         </Field>
         <Divider color={C.coral} label="Ecosystem & Industry Links" />
-        <Field label="Your role in the startup / innovation ecosystem at your institution" color={C.coral}>
+        <Field label="Your role in the startup / innovation ecosystem at your institution" required color={C.coral}>
           <RadioGroup color={C.coral} options={["Faculty in Residence at incubator", "Mentor to student startups", "Industry liaison for student projects", "Advisory board of startup", "No formal role — ad hoc involvement", "No current role", "Would like a role"]} value={data.boundaries.startupEcosystemRole} onChange={v => upd("boundaries", "startupEcosystemRole", v)} />
         </Field>
-        <Field label="Industry exposure activities you facilitate for students" color={C.coral}>
+        <Field label="Industry exposure activities you facilitate for students" required color={C.coral}>
           <CheckGroup color={C.coral} options={["Industry visits / immersion trips", "Guest lectures from practitioners", "Industry-sponsored capstone projects", "Live client briefs in coursework", "Internships with research link", "Co-working / co-creation sessions with industry", "None"]} selected={data.boundaries.industryExposureActivities} onChange={v => upd("boundaries", "industryExposureActivities", v)} />
         </Field>
-        <Field label="Do your students engage with UN Sustainable Development Goals (SDGs) in coursework?" color={C.coral}>
+        <Field label="Do your students engage with UN Sustainable Development Goals (SDGs) in coursework?" required color={C.coral}>
           <CheckGroup color={C.coral} cols={3} options={["SDG 1: No Poverty", "SDG 3: Good Health", "SDG 4: Quality Education", "SDG 7: Clean Energy", "SDG 9: Industry & Innovation", "SDG 11: Sustainable Cities", "SDG 13: Climate Action", "SDG 17: Partnerships", "Not explicitly linked to SDGs"]} selected={data.boundaries.sdgAlignment} onChange={v => upd("boundaries", "sdgAlignment", v)} />
         </Field>
         <Divider color={C.coral} label="FDP Interest & Participation" />
@@ -919,10 +1088,10 @@
         <Field label="Would you be interested in participating in future FDP sessions on these themes?" required color={C.coral}>
           <RadioGroup color={C.coral} options={["Yes — highly interested, please notify me", "Yes — interested if the topic is relevant", "Maybe — depends on time commitment", "Unlikely, but open to short sessions", "No"]} value={data.boundaries.fdpInterestedInJoining} onChange={v => upd("boundaries", "fdpInterestedInJoining", v)} />
         </Field>
-        <Field label="FDP topics you would most benefit from" color={C.coral}>
+        <Field label="FDP topics you would most benefit from" required color={C.coral}>
           <CheckGroup color={C.coral} options={["Research-to-startup: IP to market", "Design thinking for educators", "Student innovation programme design", "Research paper writing with AI tools", "Grant writing and funding acquisition", "Incubator model for academic institutions", "Transdisciplinary curriculum design", "Evidence-based teaching practices", "SDG-aligned research projects", "International research collaboration"]} selected={data.boundaries.fdpTopicsInterested} onChange={v => upd("boundaries", "fdpTopicsInterested", v)} />
         </Field>
-        <Field label="Are you engaged in any policy, advocacy or public engagement related to your research?" color={C.coral}>
+        <Field label="Are you engaged in any policy, advocacy or public engagement related to your research?" required color={C.coral}>
           <RadioGroup color={C.coral} options={["Yes — active policy engagement", "Yes — invited expert occasionally", "I write for public / popular science audiences", "I would like to but haven't started", "No"]} value={data.boundaries.policyEngagement} onChange={v => upd("boundaries", "policyEngagement", v)} />
         </Field>
       </>);
@@ -948,10 +1117,10 @@
           }
         />
         <Divider color={C.amber} label="Current Identity & Primary Role" />
-        <Field label="Which roles best describe your current academic identity?" hint="Select all that apply — your primary and secondary identities" color={C.amber}>
+        <Field label="Which roles best describe your current academic identity?" hint="Select all that apply — your primary and secondary identities" required color={C.amber}>
           <CheckGroup color={C.amber} options={["Teacher / Educator", "Researcher / Scholar", "Academic Administrator", "Industry Consultant", "Entrepreneur / Innovator", "Mentor / Coach", "Policy Contributor", "Public Intellectual", "None of the above applies fully"]} selected={data.career.primaryIdentity} onChange={v => upd("career", "primaryIdentity", v)} />
         </Field>
-        <Field label="Your current primary role (formal designation function)" color={C.amber}>
+        <Field label="Your current primary role (formal designation function)" required color={C.amber}>
           <RadioGroup color={C.amber} options={["Teaching-focused (minimal research expected)", "Research-focused (teaching is secondary)", "Equal teaching and research responsibilities", "Administrative with teaching/research load", "Industry-sponsored / practitioner role"]} value={data.career.currentRole} onChange={v => upd("career", "currentRole", v)} />
         </Field>
         <Divider color={C.amber} label="Future Pathway Aspirations" />
@@ -970,30 +1139,30 @@
             ))}
           </div>
         </div>
-        <Field label="Specific aspiration in your chosen pathway" hint="What does success look like for you in 5–7 years? Be concrete." color={C.amber}>
+        <Field label="Specific aspiration in your chosen pathway" hint="What does success look like for you in 5–7 years? Be concrete." required color={C.amber}>
           <Textarea value={data.career.fiveYearVision} onChange={v => upd("career", "fiveYearVision", v)} rows={3} placeholder="e.g. Lead a funded research centre with 5 PhD students, publish in top-10 journals, file 2 patents..." />
         </Field>
-        <Field label="Timeline for your most important career milestone" color={C.amber}>
+        <Field label="Timeline for your most important career milestone" required color={C.amber}>
           <RadioGroup color={C.amber} options={["Within 1 year", "1–2 years", "3–5 years", "5–10 years", "Beyond 10 years", "Unclear"]} value={data.career.timelineAspiration} onChange={v => upd("career", "timelineAspiration", v)} />
         </Field>
         <Divider color={C.amber} label="Skills, Gaps & Upskilling" />
-        <Field label="Skills gaps you need to address to reach your pathway" color={C.amber}>
+        <Field label="Skills gaps you need to address to reach your pathway" required color={C.amber}>
           <CheckGroup color={C.amber} options={["Research methodology", "Grant writing", "Academic writing quality", "Data analysis & statistics", "AI tools proficiency", "Leadership & management", "Entrepreneurship & commercialisation", "International collaboration", "Digital pedagogy", "Teaching effectiveness", "Policy & governance", "Industry networking", "IP / Patent management"]} selected={data.career.skillGaps} onChange={v => upd("career", "skillGaps", v)} />
         </Field>
-        <Field label="Top 3 upskilling priorities for the next 12 months" hint="Which of the above will you actively pursue first?" color={C.amber}>
+        <Field label="Top 3 upskilling priorities for the next 12 months" required hint="Which of the above will you actively pursue first?" color={C.amber}>
           <Textarea value={data.career.upskillPriorities} onChange={v => upd("career", "upskillPriorities", v)} rows={2} placeholder="e.g. AI tools for research, grant writing, academic leadership..." />
         </Field>
-        <Field label="Preferred mode for professional development / upskilling" color={C.amber}>
+        <Field label="Preferred mode for professional development / upskilling" required color={C.amber}>
           <CheckGroup color={C.amber} options={["Online self-paced courses", "Structured FDP workshops", "International conferences", "Peer learning / Collaborative research", "Mentoring from senior faculty", "Industry immersion / Sabbaticals", "Fellowship programmes", "Post-doctoral / advanced study"]} selected={data.career.supportNeeded} onChange={v => upd("career", "supportNeeded", v)} />
         </Field>
         <Divider color={C.amber} label="Mentoring & Leadership" />
-        <Field label="Are you interested in becoming a mentor to other faculty or early-career researchers?" color={C.amber}>
+        <Field label="Are you interested in becoming a mentor to other faculty or early-career researchers?" required color={C.amber}>
           <RadioGroup color={C.amber} options={["Yes — I already mentor others formally", "Yes — I mentor informally, open to formal role", "Interested but need structure and training", "Interested in being mentored myself first", "Not interested currently"]} value={data.career.mentoringRole} onChange={v => upd("career", "mentoringRole", v)} />
         </Field>
-        <Field label="Do you aspire to an international dimension in your career?" color={C.amber}>
+        <Field label="Do you aspire to an international dimension in your career?" required color={C.amber}>
           <RadioGroup color={C.amber} options={["Yes — I actively pursue international collaborations and roles", "Yes — I am open to international opportunities", "I would like to but face barriers (visa, language, funding)", "Not a priority", "No"]} value={data.career.internationalAspiration} onChange={v => upd("career", "internationalAspiration", v)} />
         </Field>
-        <Field label="What are the biggest obstacles to your career progression?" color={C.amber}>
+        <Field label="What are the biggest obstacles to your career progression?" required color={C.amber}>
           <CheckGroup color={C.amber} options={["Heavy teaching load", "Lack of funding", "Institutional bureaucracy", "Limited mentoring/guidance", "Personal/family commitments", "Skill gaps", "No clear pathway at institution", "Lack of recognition for research", "Lack of entrepreneurial ecosystem"]} selected={data.career.careerObstacles} onChange={v => upd("career", "careerObstacles", v)} />
         </Field>
       </>);
@@ -1004,10 +1173,10 @@
         <Field label="Your single most important goal in the next 12 months" required color={C.teal}>
           <Textarea value={data.aspirations.oneYearGoal} onChange={v => upd("aspirations", "oneYearGoal", v)} rows={2} placeholder="One concrete, actionable goal — not a general aspiration" />
         </Field>
-        <Field label="If you could turn one piece of research into an innovation — what would it be?" hint="Blue-sky thinking. This seed idea feeds Activity E of today's session." color={C.teal}>
+        <Field label="If you could turn one piece of research into an innovation — what would it be?" hint="Blue-sky thinking. This seed idea feeds Activity E of today's session." required color={C.teal}>
           <Textarea value={data.aspirations.innovationIdea} onChange={v => upd("aspirations", "innovationIdea", v)} rows={3} placeholder="Describe the product/service, the problem it solves, who benefits..." />
         </Field>
-        <Field label="Are you open to collaboration with other FDP participants?" color={C.teal}>
+        <Field label="Are you open to collaboration with other FDP participants?" required color={C.teal}>
           <RadioGroup color={C.teal} options={["Yes — actively looking for collaborators", "Yes — open if the right match emerges", "Maybe — depends on the topic", "Prefer solo work for now"]} value={data.aspirations.collaborationInterest} onChange={v => upd("aspirations", "collaborationInterest", v)} />
         </Field>
         <Field label="One concrete action you commit to in the next 7 days" required hint="This becomes your public commitment — displayed (anonymously) at session close" color={C.teal}>
@@ -1094,7 +1263,7 @@
 
             {/* Stats row */}
             <div style={{ display: "flex", justifyContent: "center", gap: 40, marginBottom: 48, flexWrap: "wrap" }}>
-              {[{ n: "10", label: "Sections" }, { n: "80+", label: "Questions" }, { n: "~15 min", label: "Duration" }].map(s => (
+              {[{ n: "10", label: "Sections" }, { n: "80+", label: "Questions" }, { n: "~45 min", label: "Duration" }].map(s => (
                 <div key={s.n} style={{ textAlign: "center" }}>
                   <div style={{ fontFamily: "'EB Garamond',Georgia,serif", fontSize: 28, fontWeight: 700, color: C.teal, lineHeight: 1 }}>{s.n}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: C.muted, letterSpacing: 2, marginTop: 4, textTransform: "uppercase" }}>{s.label}</div>
