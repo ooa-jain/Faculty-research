@@ -25,7 +25,6 @@
 <div class="page-subhead">ID: {{ doc._id }} · SUBMITTED: {{ doc.submitted_at.strftime('%d %B %Y at %H:%M UTC') if doc.submitted_at else '—' }}</div>
 
 <div class="two-panel">
-  <!-- Left column -->
   <div>
     <div class="card detail-section">
       <div class="detail-section-title">Consent & Identity</div>
@@ -87,7 +86,6 @@
     </div>
   </div>
 
-  <!-- Right column -->
   <div>
     <div class="card detail-section">
       <div class="detail-section-title">AI for Global Publication</div>
@@ -157,7 +155,6 @@
   </div>
 </div>
 
-<!-- Delete -->
 <div style="margin-top:8px;padding-top:16px;border-top:1px solid #e8e0d0">
   <form method="POST" action="{{ url_for('admin_delete', response_id=doc._id) }}" onsubmit="return confirm('Permanently delete this response?')">
     <button type="submit" class="btn btn-danger">Delete this Response</button>

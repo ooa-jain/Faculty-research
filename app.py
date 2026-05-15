@@ -1,7 +1,7 @@
 import os
 import json
 import io
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from functools import wraps
 
 from flask import (
@@ -9,6 +9,7 @@ from flask import (
     redirect, url_for, session, flash, send_file
 )
 from pymongo import MongoClient, DESCENDING
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from bson import ObjectId
 from dotenv import load_dotenv
 
@@ -17,12 +18,57 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-secret-key")
 
-# ── MongoDB ──────────────────────────────────────────────────────────────────
-client = MongoClient(os.getenv("MONGO_URI"))
+# ── Session & Security Config ─────────────────────────────────────────────────
+app.config.update(
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=2),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+)
+
+# ── Rate Limiting ─────────────────────────────────────────────────────────────
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+    limiter = Limiter(
+        app=app,
+        key_func=get_remote_address,
+        default_limits=["500 per day", "100 per hour"],
+        storage_uri="memory://",
+    )
+    LIMITER_AVAILABLE = True
+except ImportError:
+    LIMITER_AVAILABLE = False
+    print("WARNING: flask-limiter not installed. Run: pip install Flask-Limiter")
+
+# ── MongoDB with connection pooling ───────────────────────────────────────────
+try:
+    client = MongoClient(
+        os.getenv("MONGO_URI"),
+        maxPoolSize=50,
+        minPoolSize=5,
+        serverSelectionTimeoutMS=5000,
+        connectTimeoutMS=10000,
+        socketTimeoutMS=45000,
+        retryWrites=True,
+    )
+    client.admin.command('ping')
+    print("MongoDB connected successfully.")
+except Exception as e:
+    print(f"WARNING: MongoDB connection issue: {e}")
+
 db = client.get_default_database()
 responses_col = db["survey_responses"]
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# ── Static file caching ───────────────────────────────────────────────────────
+@app.after_request
+def add_cache_headers(response):
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=3600'
+    else:
+        response.headers['Cache-Control'] = 'no-store'
+    return response
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
@@ -55,18 +101,39 @@ def submit_survey():
     if not payload:
         return jsonify({"ok": False, "error": "Empty payload"}), 400
 
-    # Basic consent gate
     consent = payload.get("consent", {})
     if not consent.get("agreed"):
         return jsonify({"ok": False, "error": "Consent not given"}), 400
+
+    payload_str = json.dumps(payload)
+    if len(payload_str) > 100_000:
+        return jsonify({"ok": False, "error": "Payload too large"}), 413
 
     doc = {
         **payload,
         "submitted_at": datetime.now(timezone.utc),
         "ip": request.remote_addr,
     }
-    result = responses_col.insert_one(doc)
-    return jsonify({"ok": True, "id": str(result.inserted_id)}), 201
+
+    try:
+        result = responses_col.insert_one(doc)
+        return jsonify({"ok": True, "id": str(result.inserted_id)}), 201
+    except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+        app.logger.error(f"MongoDB connection error on submit: {e}")
+        return jsonify({"ok": False, "error": "Database temporarily unavailable. Please retry."}), 503
+    except Exception as e:
+        app.logger.error(f"DB insert failed: {e}")
+        return jsonify({"ok": False, "error": "Server error. Please retry."}), 500
+
+
+# ── Health check ──────────────────────────────────────────────────────────────
+@app.route("/health")
+def health():
+    try:
+        client.admin.command('ping')
+        return jsonify({"status": "ok", "db": "connected"}), 200
+    except Exception as e:
+        return jsonify({"status": "degraded", "db": str(e)}), 503
 
 
 # ── Admin Routes ──────────────────────────────────────────────────────────────
@@ -78,6 +145,7 @@ def admin_login():
         if (username == os.getenv("ADMIN_USERNAME", "admin") and
                 password == os.getenv("ADMIN_PASSWORD", "admin123")):
             session["admin_logged_in"] = True
+            session.permanent = True
             return redirect(url_for("admin_dashboard"))
         flash("Invalid credentials", "error")
     return render_template("admin_login.html")
@@ -92,53 +160,58 @@ def admin_logout():
 @app.route("/admin")
 @admin_required
 def admin_dashboard():
-    total = responses_col.count_documents({})
-    consented = responses_col.count_documents({"consent.agreed": True})
+    try:
+        total = responses_col.count_documents({})
+        consented = responses_col.count_documents({"consent.agreed": True})
 
-    # Aggregation stats
-    pipeline_designation = [
-        {"$group": {"_id": "$identity.designation", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}}
-    ]
-    designation_data = list(responses_col.aggregate(pipeline_designation))
+        pipeline_designation = [
+            {"$group": {"_id": "$identity.designation", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        designation_data = list(responses_col.aggregate(pipeline_designation))
 
-    pipeline_domain = [
-        {"$group": {"_id": "$research.domain", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 10}
-    ]
-    domain_data = list(responses_col.aggregate(pipeline_domain))
+        pipeline_domain = [
+            {"$group": {"_id": "$research.domain", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        domain_data = list(responses_col.aggregate(pipeline_domain))
 
-    pipeline_ai = [
-        {"$unwind": "$aitools.toolsUsed"},
-        {"$group": {"_id": "$aitools.toolsUsed", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 10}
-    ]
-    ai_tools_data = list(responses_col.aggregate(pipeline_ai))
+        pipeline_ai = [
+            {"$unwind": "$aitools.toolsUsed"},
+            {"$group": {"_id": "$aitools.toolsUsed", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        ai_tools_data = list(responses_col.aggregate(pipeline_ai))
 
-    pipeline_comfort = [
-        {"$group": {"_id": "$aitools.overallComfort", "count": {"$sum": 1}}},
-        {"$sort": {"_id": 1}}
-    ]
-    comfort_data = list(responses_col.aggregate(pipeline_comfort))
+        pipeline_comfort = [
+            {"$group": {"_id": "$aitools.overallComfort", "count": {"$sum": 1}}},
+            {"$sort": {"_id": 1}}
+        ]
+        comfort_data = list(responses_col.aggregate(pipeline_comfort))
 
-    # Recent submissions — always show name (admin view)
-    recent = list(responses_col.find(
-        {}, {"identity": 1, "submitted_at": 1, "research.domain": 1,
-             "aitools.overallComfort": 1, "consent": 1}
-    ).sort("submitted_at", DESCENDING).limit(10))
+        recent = list(responses_col.find(
+            {}, {"identity": 1, "submitted_at": 1, "research.domain": 1,
+                 "aitools.overallComfort": 1, "consent": 1}
+        ).sort("submitted_at", DESCENDING).limit(10))
 
-    return render_template(
-        "admin_dashboard.html",
-        total=total,
-        consented=consented,
-        designation_data=designation_data,
-        domain_data=domain_data,
-        ai_tools_data=ai_tools_data,
-        comfort_data=comfort_data,
-        recent=recent,
-    )
+        return render_template(
+            "admin_dashboard.html",
+            total=total, consented=consented,
+            designation_data=designation_data,
+            domain_data=domain_data,
+            ai_tools_data=ai_tools_data,
+            comfort_data=comfort_data,
+            recent=recent,
+        )
+    except Exception as e:
+        app.logger.error(f"Dashboard error: {e}")
+        flash("Error loading dashboard data.", "error")
+        return render_template("admin_dashboard.html",
+            total=0, consented=0,
+            designation_data=[], domain_data=[],
+            ai_tools_data=[], comfort_data=[], recent=[])
 
 
 @app.route("/admin/responses")
@@ -147,10 +220,14 @@ def admin_responses():
     page = int(request.args.get("page", 1))
     per_page = 20
     skip = (page - 1) * per_page
-    total = responses_col.count_documents({})
-    docs = list(responses_col.find({}).sort(
-        "submitted_at", DESCENDING).skip(skip).limit(per_page))
-    pages = (total + per_page - 1) // per_page
+    try:
+        total = responses_col.count_documents({})
+        docs = list(responses_col.find({}).sort(
+            "submitted_at", DESCENDING).skip(skip).limit(per_page))
+        pages = (total + per_page - 1) // per_page
+    except Exception as e:
+        app.logger.error(f"Responses list error: {e}")
+        total, docs, pages = 0, [], 0
     return render_template(
         "admin_responses.html",
         docs=docs, page=page, pages=pages, total=total
@@ -160,7 +237,11 @@ def admin_responses():
 @app.route("/admin/response/<response_id>")
 @admin_required
 def admin_response_detail(response_id):
-    doc = responses_col.find_one({"_id": ObjectId(response_id)})
+    try:
+        doc = responses_col.find_one({"_id": ObjectId(response_id)})
+    except Exception:
+        flash("Invalid response ID.", "error")
+        return redirect(url_for("admin_responses"))
     if not doc:
         flash("Response not found", "error")
         return redirect(url_for("admin_responses"))
@@ -170,17 +251,22 @@ def admin_response_detail(response_id):
 @app.route("/admin/export/json")
 @admin_required
 def export_json():
-    docs = list(responses_col.find({}))
-    for d in docs:
-        d["_id"] = str(d["_id"])
-        if "submitted_at" in d:
-            d["submitted_at"] = d["submitted_at"].isoformat()
-    response = app.response_class(
-        json.dumps(docs, indent=2, ensure_ascii=False),
-        mimetype="application/json",
-        headers={"Content-Disposition": "attachment; filename=fdp_responses.json"}
-    )
-    return response
+    try:
+        docs = list(responses_col.find({}))
+        for d in docs:
+            d["_id"] = str(d["_id"])
+            if "submitted_at" in d:
+                d["submitted_at"] = d["submitted_at"].isoformat()
+        response = app.response_class(
+            json.dumps(docs, indent=2, ensure_ascii=False),
+            mimetype="application/json",
+            headers={"Content-Disposition": "attachment; filename=fdp_responses.json"}
+        )
+        return response
+    except Exception as e:
+        app.logger.error(f"JSON export error: {e}")
+        flash("Export failed.", "error")
+        return redirect(url_for("admin_dashboard"))
 
 
 @app.route("/admin/export/excel")
@@ -192,13 +278,17 @@ def export_excel():
     except ImportError:
         return "openpyxl not installed. Run: pip install openpyxl", 500
 
-    docs = list(responses_col.find({}).sort("submitted_at", DESCENDING))
+    try:
+        docs = list(responses_col.find({}).sort("submitted_at", DESCENDING))
+    except Exception as e:
+        app.logger.error(f"Excel export DB error: {e}")
+        flash("Export failed — database error.", "error")
+        return redirect(url_for("admin_dashboard"))
 
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "FDP Responses"
 
-    # Header style
     header_font = Font(bold=True, color="FFFFFF", size=11)
     header_fill = PatternFill("solid", fgColor="00B4A6")
     header_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
@@ -244,33 +334,22 @@ def export_excel():
             submitted = submitted.strftime("%d %b %Y %H:%M")
 
         row = [
-            i,
-            submitted,
-            flat(ident.get("name")),
-            flat(ident.get("email")),
-            flat(ident.get("institution")),
-            flat(ident.get("department")),
-            flat(ident.get("designation")),
-            flat(ident.get("yearsExp")),
+            i, submitted,
+            flat(ident.get("name")), flat(ident.get("email")),
+            flat(ident.get("institution")), flat(ident.get("department")),
+            flat(ident.get("designation")), flat(ident.get("yearsExp")),
             flat(ident.get("orcid")),
-            flat(res.get("domain")),
-            flat(res.get("subDomain")),
-            flat(res.get("keywords")),
-            flat(res.get("paradigm")),
+            flat(res.get("domain")), flat(res.get("subDomain")),
+            flat(res.get("keywords")), flat(res.get("paradigm")),
             flat(res.get("focus")),
-            flat(pub.get("total")),
-            flat(pub.get("indexed")),
-            flat(pub.get("hIndex")),
-            flat(pub.get("citations")),
+            flat(pub.get("total")), flat(pub.get("indexed")),
+            flat(pub.get("hIndex")), flat(pub.get("citations")),
             flat(pub.get("patents")),
-            flat(ai.get("overallComfort")),
-            flat(ai.get("toolsUsed")),
+            flat(ai.get("overallComfort")), flat(ai.get("toolsUsed")),
             flat(ai.get("concerns")),
-            flat(inno.get("hasProject")),
-            flat(inno.get("stage")),
+            flat(inno.get("hasProject")), flat(inno.get("stage")),
             flat(integ.get("integrationLevel")),
-            flat(asp.get("oneYearGoal")),
-            flat(asp.get("commitmentAction")),
+            flat(asp.get("oneYearGoal")), flat(asp.get("commitmentAction")),
             flat(asp.get("additionalThoughts")),
             "Yes" if con.get("agreed") else "No",
         ]
@@ -279,7 +358,6 @@ def export_excel():
             cell.alignment = Alignment(wrap_text=True, vertical="top")
         ws.row_dimensions[i + 1].height = 18
 
-    # Freeze header
     ws.freeze_panes = "A2"
 
     output = io.BytesIO()
@@ -296,10 +374,28 @@ def export_excel():
 @app.route("/admin/delete/<response_id>", methods=["POST"])
 @admin_required
 def admin_delete(response_id):
-    responses_col.delete_one({"_id": ObjectId(response_id)})
-    flash("Response deleted.", "success")
+    try:
+        responses_col.delete_one({"_id": ObjectId(response_id)})
+        flash("Response deleted.", "success")
+    except Exception as e:
+        app.logger.error(f"Delete error: {e}")
+        flash("Delete failed.", "error")
     return redirect(url_for("admin_responses"))
 
 
+# ── Error handlers ────────────────────────────────────────────────────────────
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"error": "Not found"}), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return jsonify({"error": "Internal server error"}), 500
+
+@app.errorhandler(429)
+def rate_limit_exceeded(e):
+    return jsonify({"ok": False, "error": "Too many requests. Please wait and retry."}), 429
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000, threaded=True)

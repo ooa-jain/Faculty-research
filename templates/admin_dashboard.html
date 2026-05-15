@@ -5,7 +5,6 @@
 <div class="page-heading">Dashboard</div>
 <div class="page-subhead">REAL-TIME SURVEY ANALYTICS · FDP RESEARCH INSTRUMENT</div>
 
-<!-- Stats -->
 <div class="stat-grid">
   <div class="stat-card">
     <div class="stat-num">{{ total }}</div>
@@ -20,13 +19,12 @@
     <div class="stat-label">Consent Rate</div>
   </div>
   <div class="stat-card">
-    <div class="stat-num">{{ 80 - total }}</div>
+    <div class="stat-num">{{ [80 - total, 0] | max }}</div>
     <div class="stat-label">Remaining (target N=80)</div>
   </div>
 </div>
 
 <div class="two-panel">
-  <!-- Designation breakdown -->
   <div class="card">
     <div class="card-title">Designation Breakdown</div>
     <div style="position: relative; height: 250px; width: 100%;">
@@ -34,7 +32,6 @@
     </div>
   </div>
 
-  <!-- AI Comfort distribution -->
   <div class="card">
     <div class="card-title">AI Comfort Level Distribution</div>
     <div style="position: relative; height: 250px; width: 100%;">
@@ -42,7 +39,6 @@
     </div>
   </div>
 
-  <!-- AI Tool usage -->
   <div class="card">
     <div class="card-title">Top AI Tools Used</div>
     <div style="position: relative; height: 300px; width: 100%;">
@@ -50,7 +46,6 @@
     </div>
   </div>
 
-  <!-- Research domains -->
   <div class="card">
     <div class="card-title">Top Research Domains</div>
     <div style="position: relative; height: 300px; width: 100%;">
@@ -59,7 +54,6 @@
   </div>
 </div>
 
-<!-- Recent submissions -->
 <div class="card" style="margin-top:24px">
   <div class="card-title">Recent Submissions</div>
   <div style="overflow-x:auto;">
@@ -106,113 +100,53 @@
 </div>
 
 <script>
-  // Chart.js global defaults
   Chart.defaults.font.family = "'DM Mono', monospace";
   Chart.defaults.color = '#64748B';
   Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.9)';
   Chart.defaults.plugins.tooltip.padding = 10;
   Chart.defaults.plugins.tooltip.cornerRadius = 8;
-  
+
   const designationData = {{ designation_data | tojson }};
   const comfortData = {{ comfort_data | tojson }};
   const aiToolsData = {{ ai_tools_data | tojson }};
   const domainData = {{ domain_data | tojson }};
-  
-  // Custom Color Palettes
-  const colors = [
-    '#00B4A6', '#7C3AED', '#E05252', '#F59E0B', 
-    '#3B82F6', '#10B981', '#EC4899', '#6366F1', '#8B5CF6', '#14B8A6'
-  ];
 
-  // 1. Designation Chart (Pie)
+  const colors = ['#00B4A6','#7C3AED','#E05252','#F59E0B','#3B82F6','#10B981','#EC4899','#6366F1','#8B5CF6','#14B8A6'];
+
   new Chart(document.getElementById('designationChart'), {
     type: 'pie',
     data: {
       labels: designationData.map(d => d._id || 'Not specified'),
-      datasets: [{
-        data: designationData.map(d => d.count),
-        backgroundColor: colors,
-        borderWidth: 2,
-        borderColor: '#ffffff'
-      }]
+      datasets: [{ data: designationData.map(d => d.count), backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }
-      }
-    }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } } }
   });
 
-  // 2. Comfort Chart (Doughnut)
   new Chart(document.getElementById('comfortChart'), {
     type: 'doughnut',
     data: {
       labels: comfortData.filter(d=>d._id).map(d => 'Level ' + d._id),
-      datasets: [{
-        data: comfortData.filter(d=>d._id).map(d => d.count),
-        backgroundColor: ['#E2E8F0', '#CBD5E1', '#94A3B8', '#64748B', '#00B4A6', '#7C3AED'],
-        borderWidth: 2,
-        borderColor: '#ffffff'
-      }]
+      datasets: [{ data: comfortData.filter(d=>d._id).map(d => d.count), backgroundColor: ['#E2E8F0','#CBD5E1','#94A3B8','#64748B','#00B4A6','#7C3AED'], borderWidth: 2, borderColor: '#ffffff' }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }
-      },
-      cutout: '70%'
-    }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } }, cutout: '70%' }
   });
 
-  // 3. AI Tools Chart (Bar)
   new Chart(document.getElementById('aiToolsChart'), {
     type: 'bar',
     data: {
       labels: aiToolsData.map(d => d._id || 'None'),
-      datasets: [{
-        label: 'Users',
-        data: aiToolsData.map(d => d.count),
-        backgroundColor: '#7C3AED',
-        borderRadius: 6
-      }]
+      datasets: [{ label: 'Users', data: aiToolsData.map(d => d.count), backgroundColor: '#7C3AED', borderRadius: 6 }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: 'y',
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { beginAtZero: true, grid: { color: '#F1F5F9' } },
-        y: { grid: { display: false } }
-      }
-    }
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: '#F1F5F9' } }, y: { grid: { display: false } } } }
   });
 
-  // 4. Domain Chart (Bar)
   new Chart(document.getElementById('domainChart'), {
     type: 'bar',
     data: {
       labels: domainData.map(d => (d._id || 'Not specified').substring(0, 20)),
-      datasets: [{
-        label: 'Users',
-        data: domainData.map(d => d.count),
-        backgroundColor: '#00B4A6',
-        borderRadius: 6
-      }]
+      datasets: [{ label: 'Users', data: domainData.map(d => d.count), backgroundColor: '#00B4A6', borderRadius: 6 }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: 'y',
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { beginAtZero: true, grid: { color: '#F1F5F9' } },
-        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-      }
-    }
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: '#F1F5F9' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
   });
 </script>
 {% endblock %}
