@@ -19,8 +19,8 @@
     <div class="stat-label">Consent Rate</div>
   </div>
   <div class="stat-card">
-    <div class="stat-num">{{ [80 - total, 0] | max }}</div>
-    <div class="stat-label">Remaining (target N=80)</div>
+    <div class="stat-num">{{ [target_n - total, 0] | max }}</div>
+    <div class="stat-label">Remaining (target N={{ target_n }}) <button onclick="editTarget()" style="background:none;border:none;color:#00B4A6;cursor:pointer;font-size:10px;margin-left:4px;" title="Edit Target">✎</button></div>
   </div>
 </div>
 
@@ -100,6 +100,20 @@
 </div>
 
 <script>
+  function editTarget() {
+    const current = {{ target_n }};
+    const newTarget = prompt("Enter new target number of participants:", current);
+    if (newTarget && !isNaN(newTarget)) {
+      fetch('/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_n: parseInt(newTarget) })
+      }).then(r => r.json()).then(res => {
+        if(res.ok) window.location.reload();
+      });
+    }
+  }
+
   Chart.defaults.font.family = "'DM Mono', monospace";
   Chart.defaults.color = '#64748B';
   Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.9)';

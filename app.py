@@ -58,6 +58,7 @@ except Exception as e:
 
 db = client.get_default_database()
 responses_col = db["survey_responses"]
+settings_col = db["settings"]
 
 # ── Static file caching ───────────────────────────────────────────────────────
 @app.after_request
@@ -163,6 +164,9 @@ def admin_dashboard():
     try:
         total = responses_col.count_documents({})
         consented = responses_col.count_documents({"consent.agreed": True})
+        
+        settings = settings_col.find_one({"_id": "global"}) or {"target_n": 80}
+        target_n = settings.get("target_n", 80)
 
         pipeline_designation = [
             {"$group": {"_id": "$identity.designation", "count": {"$sum": 1}}},
@@ -204,6 +208,7 @@ def admin_dashboard():
             ai_tools_data=ai_tools_data,
             comfort_data=comfort_data,
             recent=recent,
+            target_n=target_n,
         )
     except Exception as e:
         app.logger.error(f"Dashboard error: {e}")
@@ -211,7 +216,19 @@ def admin_dashboard():
         return render_template("admin_dashboard.html",
             total=0, consented=0,
             designation_data=[], domain_data=[],
-            ai_tools_data=[], comfort_data=[], recent=[])
+            ai_tools_data=[], comfort_data=[], recent=[], target_n=80)
+
+@app.route("/admin/settings", methods=["POST"])
+@admin_required
+def admin_settings():
+    data = request.json
+    target_n = int(data.get("target_n", 80))
+    settings_col.update_one(
+        {"_id": "global"},
+        {"$set": {"target_n": target_n}},
+        upsert=True
+    )
+    return jsonify({"ok": True})
 
 
 @app.route("/admin/responses")
