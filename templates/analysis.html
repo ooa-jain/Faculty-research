@@ -835,17 +835,58 @@
         width: 100% !important;
         box-sizing: border-box;
       }
-      .dashboard-header {
-        padding: 16px;
-        margin-top: 0;
-      }
+      
       .dashboard-canvas {
-        padding: 16px;
+        padding: 12px !important;
       }
       
-      /* Make grids stack on mobile */
-      .grid-2col, .grid-3col, .grid-4col, .kpi-grid {
+      .dashboard-header {
+        padding: 16px !important;
+        margin-top: 0 !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+      }
+      .header-actions {
+        width: 100% !important;
+        display: flex !important;
+        gap: 8px !important;
+        justify-content: space-between !important;
+      }
+      .btn-pdf, .btn-filters-toggle {
+        flex: 1 !important;
+        justify-content: center !important;
+        margin: 0 !important;
+      }
+      
+      .card {
+        padding: 16px !important;
+      }
+      .card-title {
+        font-size: 9px !important;
+        margin-bottom: 12px !important;
+      }
+      
+      /* Make KPI grid 2-column on mobile */
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+      .kpi-card {
+        padding: 12px !important;
+      }
+      .kpi-num {
+        font-size: 24px !important;
+      }
+      .kpi-label {
+        font-size: 8px !important;
+        margin-top: 4px !important;
+      }
+      
+      /* Make charts & tables grids stack vertically on mobile */
+      .grid-2col, .grid-3col, .grid-4col {
         grid-template-columns: 1fr !important;
+        gap: 16px !important;
       }
       
       /* Modal Mobile Responsiveness */
@@ -900,11 +941,11 @@
         display: none !important;
         grid-template-columns: 1fr !important;
         background: #f8fafc;
-        border: 1.5px solid #e2e8f0;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
         padding: 16px !important;
-        margin-top: 16px;
-        gap: 16px !important;
+        margin-top: 12px;
+        gap: 12px !important;
         width: 100%;
         box-sizing: border-box;
       }
@@ -912,7 +953,8 @@
         display: grid !important;
       }
     }
-  </style>
+    
+</style>
 </head>
 <body>
   <!-- Mobile Header Bar -->
