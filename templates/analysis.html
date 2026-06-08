@@ -245,6 +245,10 @@
       box-shadow: 0 6px 16px rgba(0, 180, 166, 0.3);
     }
 
+    .btn-filters-toggle {
+      display: none;
+    }
+
     /* Slicers (Filters) Panel */
     .filters-panel {
       display: grid;
@@ -698,43 +702,237 @@
         grid-template-columns: 1fr;
       }
     }
+    /* Mobile Navigation & Header */
+    .mobile-header {
+      display: none;
+    }
+    .mobile-menu-backdrop {
+      display: none;
+    }
+    .hamburger-btn {
+      display: none;
+    }
+
+    /* Profile Modal responsive grids */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .profile-subgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      font-size: 13px;
+    }
+    .profile-header-card {
+      background: var(--sidebar-bg);
+      color: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+    }
+
     @media (max-width: 768px) {
       body {
         flex-direction: column;
       }
-      .sidebar {
+      .mobile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--sidebar-bg);
+        padding: 12px 16px;
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        min-height: auto;
-        position: relative;
-        height: auto;
+        height: 56px;
+        z-index: 1002;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        box-sizing: border-box;
+      }
+      .mobile-menu-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(2px);
+        z-index: 1000;
+        display: none;
+      }
+      .mobile-menu-backdrop.open {
+        display: block;
+      }
+      .hamburger-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 24px;
+        height: 18px;
+        padding: 0;
+        z-index: 1003;
+      }
+      .hamburger-btn .bar {
+        width: 100%;
+        height: 2px;
+        background-color: white;
+        transition: all 0.3s ease-in-out;
+      }
+      .hamburger-btn.open .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+      }
+      .hamburger-btn.open .bar:nth-child(2) {
+        opacity: 0;
+      }
+      .hamburger-btn.open .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 280px;
+        height: 100%;
+        z-index: 1001;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        display: flex !important;
+      }
+      .sidebar.open {
+        transform: translateX(0);
       }
       .nav-list {
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 10px;
+        flex-direction: column !important;
+        overflow-x: visible !important;
+        padding: 24px 0 !important;
       }
       .nav-item {
-        white-space: nowrap;
-        padding: 8px 12px;
+        white-space: normal !important;
+        padding: 12px 24px !important;
       }
       .nav-item.active {
-        border-left: none;
-        border-bottom: 3px solid var(--accent-teal);
-        padding-left: 12px;
+        border-left: 4px solid var(--accent-teal) !important;
+        border-bottom: none !important;
+        padding-left: 20px !important;
       }
       .main-layout {
         margin-left: 0;
+        padding-top: 56px;
+        width: 100% !important;
+        box-sizing: border-box;
       }
       .dashboard-header {
         padding: 16px;
+        margin-top: 0;
       }
       .dashboard-canvas {
         padding: 16px;
+      }
+      
+      /* Make grids stack on mobile */
+      .grid-2col, .grid-3col, .grid-4col, .kpi-grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      /* Modal Mobile Responsiveness */
+      .modal {
+        z-index: 2000; /* overlay mobile top bar */
+        padding: 10px;
+      }
+      .modal-content {
+        max-width: 95vw !important;
+        max-height: 90vh !important;
+      }
+      .modal-body {
+        padding: 16px !important;
+      }
+      
+      /* Profile Modal inner elements */
+      .profile-grid, .profile-subgrid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+      .profile-header-card {
+        padding: 16px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+      }
+      .profile-header-card div {
+        text-align: left !important;
+      }
+
+      /* Collapsible filters on mobile */
+      .btn-filters-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .btn-filters-toggle:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+      }
+      .filters-panel {
+        display: none !important;
+        grid-template-columns: 1fr !important;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px !important;
+        margin-top: 16px;
+        gap: 16px !important;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .filters-panel.show {
+        display: grid !important;
       }
     }
   </style>
 </head>
 <body>
+  <!-- Mobile Header Bar -->
+  <div class="mobile-header no-print">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <img src="/static/jain logo.png" alt="Jain Logo" style="height: 32px; width: auto;">
+      <div style="display: flex; flex-direction: column; line-height: 1.1;">
+        <span style="font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700; color: white; letter-spacing: 0.5px;">JAIN</span>
+        <span style="font-size: 8px; color: rgba(255, 255, 255, 0.6); text-transform: uppercase;">Research &amp; Innovation</span>
+      </div>
+    </div>
+    <button class="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Toggle Navigation">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </button>
+  </div>
+
+  <!-- Mobile Overlay Backdrop -->
+  <div id="mobile-menu-backdrop" class="mobile-menu-backdrop" onclick="toggleMobileMenu()"></div>
 
   <!-- Loader Screen -->
   <div id="loader">
@@ -790,7 +988,10 @@
           <h1 id="active-tab-title">Survey Executive Summary</h1>
           <p>POWER BI REPORT CANVAS · PUBLIC HUB</p>
         </div>
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn-filters-toggle no-print" onclick="toggleFilters()">
+            <span>🎛</span> Filters
+          </button>
           <button class="btn-pdf" onclick="exportReportPDF()">
             <span>⬇</span> Export PDF
           </button>
@@ -922,106 +1123,6 @@
                 <!-- Dynamically populated -->
               </tbody>
             </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB: DEPARTMENT ANALYSIS -->
-      <div id="tab-department" class="tab-content">
-        <!-- Selector and KPI Card Row -->
-        <div style="background: white; border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);">
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Select Department:</span>
-              <select id="dept-analysis-select" class="filter-select" style="min-width: 250px; border-color: var(--accent-teal);" onchange="onDeptSelectChange()">
-                <!-- Dynamically filled with departments -->
-              </select>
-            </div>
-            <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent-teal); font-weight: 700;" id="dept-selected-label">DEPARTMENT ANALYSIS</div>
-          </div>
-          
-          <div class="kpi-grid" style="margin-bottom: 0;">
-            <div class="kpi-card" style="box-shadow: none; border-color: #e2e8f0;">
-              <div id="kpi-dept-count" class="kpi-num">0</div>
-              <div class="kpi-label">Faculty in Department</div>
-            </div>
-            <div class="kpi-card violet" style="box-shadow: none; border-color: #e2e8f0;">
-              <div id="kpi-dept-exp" class="kpi-num">0.0</div>
-              <div class="kpi-label">Average Experience</div>
-            </div>
-            <div class="kpi-card amber" style="box-shadow: none; border-color: #e2e8f0;">
-              <div id="kpi-dept-pubs" class="kpi-num">0</div>
-              <div class="kpi-label">Total Est. Publications</div>
-            </div>
-            <div class="kpi-card emerald" style="box-shadow: none; border-color: #e2e8f0;">
-              <div id="kpi-dept-comfort" class="kpi-num">0.0</div>
-              <div class="kpi-label">Average AI Comfort</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Department Charts Grid -->
-        <div class="grid-2col">
-          <div class="card">
-            <div class="card-title">Designation Breakdown in Department</div>
-            <div class="chart-container">
-              <canvas id="chart-dept-designation"></canvas>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title">AI Comfort Levels in Department</div>
-            <div class="chart-container">
-              <canvas id="chart-dept-comfort"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Faculty List in Department -->
-        <div class="card" style="margin-bottom: 24px;">
-          <div class="card-title">
-            <span id="dept-faculty-title">Faculty List (Department)</span>
-          </div>
-          <div style="overflow-x: auto;">
-            <table class="data-table" style="width: 100%;">
-              <thead>
-                <tr>
-                  <th style="padding: 12px 14px;">Name</th>
-                  <th style="padding: 12px 14px;">Designation</th>
-                  <th style="padding: 12px 14px;">Research Domain</th>
-                  <th style="padding: 12px 14px;">AI Comfort</th>
-                  <th style="padding: 12px 14px; text-align: center;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="dept-responses-tbody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Overall Department Comparisons -->
-        <div style="margin-top: 40px; margin-bottom: 16px; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 8px;">
-          <h2 style="font-family: 'EB Garamond', Georgia, serif; font-size: 20px; font-weight: 700; color: var(--sidebar-bg); letter-spacing: 0.5px; text-transform: uppercase;">Overall Departmental Comparisons</h2>
-        </div>
-
-        <div class="grid-3col">
-          <div class="card">
-            <div class="card-title">Respondent Count by Department</div>
-            <div class="chart-container" style="min-height: 200px;">
-              <canvas id="chart-dept-compare-count"></canvas>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title">Average Publications by Department</div>
-            <div class="chart-container" style="min-height: 200px;">
-              <canvas id="chart-dept-compare-pubs"></canvas>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title">Average AI Comfort by Department</div>
-            <div class="chart-container" style="min-height: 200px;">
-              <canvas id="chart-dept-compare-comfort"></canvas>
-            </div>
           </div>
         </div>
       </div>
@@ -1523,6 +1624,14 @@
       }
     }
 
+    // Toggle filters panel on mobile
+    function toggleFilters() {
+      const panel = document.querySelector('.filters-panel');
+      if (panel) {
+        panel.classList.toggle('show');
+      }
+    }
+
     // Clear filters
     function resetFilters() {
       document.getElementById('filter-designation').value = '';
@@ -1530,10 +1639,31 @@
       document.getElementById('filter-domain').value = '';
       document.getElementById('filter-experience').value = '';
       applyFilters();
+
+      // Close filter panel on mobile after clearing
+      const panel = document.querySelector('.filters-panel');
+      if (panel && window.innerWidth <= 768) {
+        panel.classList.remove('show');
+      }
     }
 
     // Switch Tabs
+    function toggleMobileMenu() {
+      const sidebar = document.querySelector('.sidebar');
+      const backdrop = document.getElementById('mobile-menu-backdrop');
+      const btn = document.querySelector('.hamburger-btn');
+      if (sidebar) sidebar.classList.toggle('open');
+      if (backdrop) backdrop.classList.toggle('open');
+      if (btn) btn.classList.toggle('open');
+    }
+
     function switchTab(tabId, el) {
+      // Close mobile menu if open
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar && sidebar.classList.contains('open')) {
+        toggleMobileMenu();
+      }
+
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
       el.classList.add('active');
 
@@ -1711,7 +1841,7 @@
 
       let html = `
         <!-- Prominent top header: Name, Domain, and Department -->
-        <div style="background: var(--sidebar-bg); color: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);">
+        <div class="profile-header-card">
           <div>
             <h2 style="font-family: 'EB Garamond', Georgia, serif; font-size: 28px; font-weight: 700; margin: 0; color: white; letter-spacing: 0.5px;">${name}</h2>
             <p style="font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent-teal); margin: 6px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">${des} &bull; ${dept}</p>
@@ -1722,7 +1852,7 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="profile-grid">
           <!-- Left Column -->
           <div style="display: flex; flex-direction: column; gap: 20px;">
             
@@ -1819,7 +1949,7 @@
         <!-- Section 7: Qualitative Aspirations & Commitments -->
         <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 20px;">
           <h4 style="font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; color: var(--text-main); border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">7. Aspirations & Commitments</h4>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 13px;">
+          <div class="profile-subgrid">
             <div>
               <strong>12-Month Goal:</strong>
               <p style="color: #475569; font-style: italic; margin-top: 4px; line-height: 1.5;">"${goal}"</p>
@@ -1868,108 +1998,6 @@
     }
 
     // Dynamic department analysis update
-    function updateDepartmentDashboard() {
-      const deptSelect = document.getElementById('dept-analysis-select');
-      if (!deptSelect) return;
-      
-      let selectedDept = deptSelect.value;
-      if (!selectedDept && deptSelect.options.length > 0) {
-        selectedDept = deptSelect.options[0].value;
-        deptSelect.value = selectedDept;
-      }
-      
-      document.getElementById('dept-selected-label').textContent = `DEPARTMENT: ${selectedDept || 'NONE'}`;
-      document.getElementById('dept-faculty-title').textContent = `Faculty List in ${selectedDept || 'Department'}`;
-
-      const deptData = rawSurveyData.filter(d => (getNested(d, 'identity.department') || '').trim() === selectedDept);
-
-      // 1. Calculate Department KPIs
-      const deptCount = deptData.length;
-      document.getElementById('kpi-dept-count').textContent = deptCount;
-
-      const totalExpYears = deptData.reduce((sum, d) => sum + expYearsFromStr(getNested(d, 'identity.yearsExp') || getNested(d, 'identity.yearsExperience')), 0);
-      const avgExp = deptCount > 0 ? (totalExpYears / deptCount).toFixed(1) : '0';
-      document.getElementById('kpi-dept-exp').textContent = avgExp;
-
-      const totalPubs = deptData.reduce((sum, d) => sum + pubCountsFromStr(getNested(d, 'publication.total')), 0);
-      document.getElementById('kpi-dept-pubs').textContent = totalPubs;
-
-      const totalComfort = deptData.reduce((sum, d) => sum + (parseInt(getNested(d, 'aitools.overallComfort')) || 0), 0);
-      const avgComfort = deptCount > 0 ? (totalComfort / deptCount).toFixed(1) : '0.0';
-      document.getElementById('kpi-dept-comfort').textContent = avgComfort;
-
-      // 2. Update Department-specific charts
-      updateChart(charts.deptDesignation, getFrequency(deptData, 'identity.designation'));
-      updateChart(charts.deptComfort, getComfortDistribution(deptData));
-
-      // 3. Populate Department Faculty Table
-      const tbody = document.getElementById('dept-responses-tbody');
-      tbody.innerHTML = '';
-      
-      if (deptData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No faculty respondents in this department.</td></tr>`;
-      } else {
-        deptData.forEach(d => {
-          let name = getNested(d, 'identity.name');
-          if (!name || name.trim() === '' || name.trim().toLowerCase() === 'anonymous') {
-            name = 'Anonymous';
-          } else {
-            name = name.trim();
-          }
-
-          const des = getNested(d, 'identity.designation') || '—';
-          const dom = getNested(d, 'research.domain') || '—';
-          const comfort = getNested(d, 'aitools.overallComfort') || '—';
-          const globalIdx = rawSurveyData.indexOf(d);
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td style="padding: 12px 14px; font-weight: 600;">
-              <a href="#" onclick="showProfile(${globalIdx}); return false;" style="color: var(--sidebar-bg); text-decoration: none; border-bottom: 1px dashed var(--accent-teal); cursor: pointer; transition: all 0.2s;">${name}</a>
-            </td>
-            <td style="padding: 12px 14px;">${des}</td>
-            <td style="padding: 12px 14px;">${dom}</td>
-            <td style="padding: 12px 14px;"><span class="badge badge-teal">${comfort} / 5</span></td>
-            <td style="padding: 12px 14px; text-align: center;">
-              <button onclick="showProfile(${globalIdx})" style="background: var(--accent-teal); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.2s;">View Profile</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
-
-      // 4. Update the overall department comparisons charts (uses ALL raw data)
-      const allDepts = {};
-      rawSurveyData.forEach(d => {
-        const dep = getNested(d, 'identity.department');
-        if (dep) {
-          const clean = dep.trim();
-          if (!allDepts[clean]) {
-            allDepts[clean] = { count: 0, pubSum: 0, comfortSum: 0 };
-          }
-          allDepts[clean].count++;
-          allDepts[clean].pubSum += pubCountsFromStr(getNested(d, 'publication.total'));
-          allDepts[clean].comfortSum += (parseInt(getNested(d, 'aitools.overallComfort')) || 0);
-        }
-      });
-
-      const deptCompareData = Object.entries(allDepts).map(([name, stats]) => ({
-        name,
-        count: stats.count,
-        avgPubs: stats.pubSum / stats.count,
-        avgComfort: stats.comfortSum / stats.count
-      })).sort((a,b) => b.count - a.count);
-
-      // Redraw Overall Comparison Charts
-      updateChart(charts.deptCompareCount, deptCompareData.map(d => [d.name, d.count]));
-      updateChart(charts.deptComparePubs, deptCompareData.map(d => [d.name, d.avgPubs.toFixed(1)]));
-      updateChart(charts.deptCompareComfort, deptCompareData.map(d => [d.name, d.avgComfort.toFixed(1)]));
-    }
-
-    function onDeptSelectChange() {
-      updateDepartmentDashboard();
-    }
-
     // Chart Options Default Design System (Power BI Clean style)
     Chart.defaults.font.family = "'Source Sans 3', sans-serif";
     Chart.defaults.color = '#64748b';
@@ -2220,36 +2248,7 @@
         options: makeChartOptions('integration.integrationLevel', { plugins: { legend: { display: false } } })
       });
 
-      // TAB: DEPARTMENT ANALYSIS Charts
-      charts.deptDesignation = new Chart(document.getElementById('chart-dept-designation'), {
-        type: 'doughnut',
-        data: { labels: [], datasets: [{ data: [], backgroundColor: colors }] },
-        options: makeChartOptions('identity.designation', { cutout: '60%', plugins: { legend: { position: 'right' } } })
-      });
-
-      charts.deptComfort = new Chart(document.getElementById('chart-dept-comfort'), {
-        type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Faculty Count', data: [], backgroundColor: colors[1], borderRadius: 4 }] },
-        options: makeChartOptions('aitools.overallComfort', { plugins: { legend: { display: false } } })
-      });
-
-      charts.deptCompareCount = new Chart(document.getElementById('chart-dept-compare-count'), {
-        type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Respondents', data: [], backgroundColor: colors[4], borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }
-      });
-
-      charts.deptComparePubs = new Chart(document.getElementById('chart-dept-compare-pubs'), {
-        type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Avg Publications', data: [], backgroundColor: colors[2], borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }
-      });
-
-      charts.deptCompareComfort = new Chart(document.getElementById('chart-dept-compare-comfort'), {
-        type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Avg AI Comfort', data: [], backgroundColor: colors[0], borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }
-      });
+      
     }
 
     // Refresh calculations and redraw
