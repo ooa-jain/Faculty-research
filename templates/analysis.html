@@ -249,6 +249,19 @@
       display: none;
     }
 
+    #export-menu a:hover {
+      background: #f1f5f9 !important;
+      color: var(--accent-teal) !important;
+    }
+    input.filter-select {
+      cursor: text !important;
+    }
+    input.filter-select:focus {
+      outline: none !important;
+      border-color: var(--accent-teal) !important;
+      box-shadow: 0 0 0 2px rgba(0, 180, 166, 0.15) !important;
+    }
+
     /* Slicers (Filters) Panel */
     .filters-panel {
       display: grid;
@@ -1034,14 +1047,25 @@
           <button class="btn-filters-toggle no-print" onclick="toggleFilters()">
             <span>🎛</span> Filters
           </button>
-          <button class="btn-pdf" onclick="exportReportPDF()">
-            <span>⬇</span> Export PDF
-          </button>
+          <div class="export-dropdown no-print" style="position: relative; display: inline-block;">
+            <button class="btn-pdf" onclick="toggleExportMenu()" style="display: inline-flex; align-items: center; gap: 8px;">
+              <span>⬇</span> Export <span style="font-size: 8px;">▼</span>
+            </button>
+            <div id="export-menu" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; min-width: 150px; margin-top: 6px;">
+              <a href="javascript:void(0)" onclick="runExport('pdf')" style="display: block; padding: 10px 14px; font-size: 12px; color: #334155; text-decoration: none; font-weight: 600; border-bottom: 1px solid #f1f5f9; transition: background 0.2s ease;">Export to PDF</a>
+              <a href="javascript:void(0)" onclick="runExport('excel')" style="display: block; padding: 10px 14px; font-size: 12px; color: #334155; text-decoration: none; font-weight: 600; border-bottom: 1px solid #f1f5f9; transition: background 0.2s ease;">Export to Excel (CSV)</a>
+              <a href="javascript:void(0)" onclick="runExport('word')" style="display: block; padding: 10px 14px; font-size: 12px; color: #334155; text-decoration: none; font-weight: 600; transition: background 0.2s ease;">Export to Word</a>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Filters (Slicers) -->
       <div class="filters-panel">
+        <div class="filter-group">
+          <span class="filter-label">Faculty Name</span>
+          <input type="text" id="filter-name" class="filter-select" placeholder="Search name..." oninput="applyFilters()">
+        </div>
         <div class="filter-group">
           <span class="filter-label">Designation</span>
           <select id="filter-designation" class="filter-select" onchange="applyFilters()">
@@ -1533,6 +1557,7 @@
 
   <script>
     let rawSurveyData = [];
+    let lastFilteredData = [];
     let charts = {};
 
     // Helper to get nested values safely
@@ -1621,18 +1646,21 @@
 
     // Returns data based on active filters
     function getActiveFilteredData() {
+      const nameVal = document.getElementById('filter-name').value.trim().toLowerCase();
       const designationVal = document.getElementById('filter-designation').value.toLowerCase();
       const departmentVal = document.getElementById('filter-department').value.toLowerCase();
       const domainVal = document.getElementById('filter-domain').value.toLowerCase();
       const experienceVal = document.getElementById('filter-experience').value.toLowerCase();
 
       return rawSurveyData.filter(d => {
+        const name = (getNested(d, 'identity.name') || '').toLowerCase();
         const des = (getNested(d, 'identity.designation') || '').toLowerCase();
         const dep = (getNested(d, 'identity.department') || '').toLowerCase();
         const dom = (getNested(d, 'research.domain') || '').toLowerCase();
         const exp = (getNested(d, 'identity.yearsExp') || getNested(d, 'identity.yearsExperience') || '').toLowerCase();
 
-        return (!designationVal || des === designationVal) &&
+        return (!nameVal || name.includes(nameVal)) &&
+               (!designationVal || des === designationVal) &&
                (!departmentVal || dep === departmentVal) &&
                (!domainVal || dom === domainVal) &&
                (!experienceVal || exp === experienceVal);
@@ -1642,6 +1670,7 @@
     // Apply Filter Logic
     function applyFilters() {
       const filtered = getActiveFilteredData();
+      lastFilteredData = filtered;
 
       // Update counters
       document.getElementById('matching-records-count').textContent = filtered.length;
@@ -1676,6 +1705,7 @@
 
     // Clear filters
     function resetFilters() {
+      document.getElementById('filter-name').value = '';
       document.getElementById('filter-designation').value = '';
       document.getElementById('filter-department').value = '';
       document.getElementById('filter-domain').value = '';
@@ -2658,30 +2688,166 @@
       }
     }
 
-    // High fidelity PDF export
+    // Export Dropdown menu controls
+    function toggleExportMenu() {
+      const menu = document.getElementById('export-menu');
+      if (menu) {
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+      }
+    }
+
+    // Close export menu on outside click
+    window.addEventListener('click', function(e) {
+      if (!e.target.closest('.export-dropdown')) {
+        const menu = document.getElementById('export-menu');
+        if (menu) menu.style.display = 'none';
+      }
+    });
+
+    function runExport(format) {
+      // Close dropdown
+      const menu = document.getElementById('export-menu');
+      if (menu) menu.style.display = 'none';
+
+      if (format === 'pdf') {
+        exportReportPDF();
+      } else if (format === 'excel') {
+        exportToExcel();
+      } else if (format === 'word') {
+        exportToWord();
+      }
+    }
+
+    // High fidelity PDF export using browser printing
     function exportReportPDF() {
-      const canvasEl = document.getElementById('dashboard-canvas');
-      const activeTabName = document.querySelector('.nav-item.active').innerText.trim();
-      
-      // Toggle printing state class to temporarily lock dimensions
+      // Add printing class to lock width & hide sidebars
       document.body.classList.add('is-printing');
       
-      const opt = {
-        margin:       0.3,
-        filename:     `Jain_FDP_Analysis_${activeTabName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-      };
+      // Wait for layout calculation to settle, then open native print dialog
+      setTimeout(() => {
+        window.print();
+        document.body.classList.remove('is-printing');
+      }, 500);
+    }
 
-      // Generate PDF
-      html2pdf().set(opt).from(canvasEl).save().then(() => {
-        document.body.classList.remove('is-printing');
-      }).catch(err => {
-        console.error("PDF Export error:", err);
-        document.body.classList.remove('is-printing');
-        alert("PDF export failed.");
+    // Client-side Excel CSV Export
+    function exportToExcel() {
+      if (!lastFilteredData || lastFilteredData.length === 0) {
+        alert("No data available to export.");
+        return;
+      }
+      
+      const headers = [
+        "Full Name", "Institution", "Department", "Designation", "Years Experience", "Email",
+        "Primary Research Domain", "Sub-Domain", "Research Paradigm", "AI Comfort Level", 
+        "Active Project Status", "TRL Stage", "Integration Level", "One Year Goal"
+      ];
+      
+      const rows = lastFilteredData.map(d => [
+        getNested(d, 'identity.name') || 'Anonymous',
+        getNested(d, 'identity.institution') || '—',
+        getNested(d, 'identity.department') || '—',
+        getNested(d, 'identity.designation') || '—',
+        getNested(d, 'identity.yearsExperience') || getNested(d, 'identity.yearsExp') || '—',
+        getNested(d, 'identity.email') || '—',
+        getNested(d, 'research.primaryDomain') || getNested(d, 'research.domain') || '—',
+        getNested(d, 'research.subDomain') || '—',
+        getNested(d, 'research.paradigm') || '—',
+        getNested(d, 'aitools.overallComfort') || '—',
+        getNested(d, 'innovation.hasActiveProject') || getNested(d, 'innovation.hasProject') || '—',
+        getNested(d, 'innovation.projectStage') || getNested(d, 'innovation.stage') || '—',
+        getNested(d, 'integration.currentIntegrationLevel') || getNested(d, 'integration.integrationLevel') || '—',
+        getNested(d, 'aspirations.oneYearGoal') || '—'
+      ].map(val => {
+        const clean = String(val).replace(/"/g, '""');
+        return `"${clean}"`;
+      }));
+      
+      const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Jain_FDP_Data_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Client-side Word DOC Export
+    function exportToWord() {
+      if (!lastFilteredData || lastFilteredData.length === 0) {
+        alert("No data available to export.");
+        return;
+      }
+      
+      const activeTabName = document.querySelector('.nav-item.active').innerText.trim();
+      
+      let html = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <title>Jain FDP Survey Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            h1 { color: #004d40; border-bottom: 2px solid #004d40; padding-bottom: 5px; font-family: serif; }
+            h2 { color: #7c3aed; margin-top: 25px; font-family: serif; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <h1>Jain FDP Survey Report: ${activeTabName}</h1>
+          <p><strong>Generated on:</strong> ${new Date().toLocaleDateString()}</p>
+          <p><strong>Total Filtered Respondents:</strong> ${lastFilteredData.length}</p>
+          
+          <h2>Respondent Directory</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Faculty Name</th>
+                <th>Department</th>
+                <th>Designation</th>
+                <th>Primary Domain</th>
+                <th>AI Comfort</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      lastFilteredData.forEach(d => {
+        const name = getNested(d, 'identity.name') || 'Anonymous';
+        const dept = getNested(d, 'identity.department') || '—';
+        const des = getNested(d, 'identity.designation') || '—';
+        const dom = getNested(d, 'research.primaryDomain') || getNested(d, 'research.domain') || '—';
+        const comfort = getNested(d, 'aitools.overallComfort') || '—';
+        
+        html += `
+          <tr>
+            <td>${name}</td>
+            <td>${dept}</td>
+            <td>${des}</td>
+            <td>${dom}</td>
+            <td>${comfort} / 5</td>
+          </tr>
+        `;
       });
+      
+      html += `
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+      
+      const blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Jain_FDP_Report_${activeTabName.replace(/\s+/g, '_')}.doc`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   </script>
 </body>
