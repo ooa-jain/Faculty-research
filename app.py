@@ -400,6 +400,30 @@ def admin_delete(response_id):
     return redirect(url_for("admin_responses"))
 
 
+@app.route("/analysis")
+def public_analysis():
+    return render_template("analysis.html")
+
+
+@app.route("/api/public/analysis-data")
+def public_analysis_data():
+    try:
+        projection = {
+            "_id": 0,
+            "identity.email": 0,
+            "identity.orcid": 0,
+            "ip": 0
+        }
+        docs = list(responses_col.find({}, projection))
+        for d in docs:
+            if "submitted_at" in d and isinstance(d["submitted_at"], datetime):
+                d["submitted_at"] = d["submitted_at"].isoformat()
+        return jsonify(docs)
+    except Exception as e:
+        app.logger.error(f"Public analysis data API error: {e}")
+        return jsonify({"error": "Failed to fetch data"}), 500
+
+
 # ── Error handlers ────────────────────────────────────────────────────────────
 @app.errorhandler(404)
 def not_found(e):
@@ -415,4 +439,4 @@ def rate_limit_exceeded(e):
 
 
 if __name__ == "__main__":
-    app.run(debug=False, port=5000, threaded=True)
+    app.run(debug=True, port=5000, threaded=True)
